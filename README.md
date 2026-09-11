@@ -18,13 +18,13 @@ Restaurant Operations ────┼─ 3. Kitchen Coordination (KDS)
                           └─ 5. Billing & Invoicing
 ```
 
-| Module                                  | Core Scope                                                                                  |        Delivery Phase        |
-| :-------------------------------------- | :------------------------------------------------------------------------------------------ | :--------------------------: |
-| **1. Table & Reservation**        | Visual floor plan, table statuses, seating coordination, advance reservations               |      Human-in-the-Loop      |
-| **2. Order Taking (POS)**         | Fast dish catalog search, live cart, dietary notes, add-on order batches                    | **Core Phase 1 (MVP)** |
-| **3. Kitchen Coordination (KDS)** | Chronological FIFO tickets, station routing (Hot/Cold/Bar), cooking stages, 86 dish alert   |        Supporting POS        |
-| **4. Menu Management**            | Catalog hierarchy, pricing, VAT, cost margin, instant stock availability toggle             | **Core Phase 1 (MVP)** |
-| **5. Billing & Invoicing**        | Pre-bill calculation, vouchers, VIP points, multi-channel payment (Cash/VietQR/Card/Wallet) | **Core Phase 1 (MVP)** |
+| Module                                  | Core Scope                                                                                  |      Note      |
+| :-------------------------------------- | :------------------------------------------------------------------------------------------ | :------------: |
+| **1. Table & Reservation**        | Visual floor plan, table statuses, seating coordination, advance reservations               |                |
+| **2. Order Taking (POS)**         | Fast dish catalog search, live cart, dietary notes, add-on order batches                    | **Core** |
+| **3. Kitchen Coordination (KDS)** | Chronological FIFO tickets, station routing (Hot/Cold/Bar), cooking stages, 86 dish alert   |                |
+| **4. Menu Management**            | Catalog hierarchy, pricing, VAT, cost margin, instant stock availability toggle             | **Core** |
+| **5. Billing & Invoicing**        | Pre-bill calculation, vouchers, VIP points, multi-channel payment (Cash/VietQR/Card/Wallet) | **Core** |
 
 ---
 

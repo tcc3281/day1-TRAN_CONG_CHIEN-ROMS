@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full bg-slate-50">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gia Vị Việt - Gourmet Restaurant POS & Back Office</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: '#fff7ed',
+                100: '#ffedd5',
+                200: '#fed7aa',
+                300: '#fdba74',
+                400: '#fb923c',
+                500: '#f97316',
+                600: '#ea580c', // Terracotta warm F&B primary
+                700: '#c2410c',
+                800: '#9a3412',
+                900: '#7c2d12',
+              }
+            },
+            fontFamily: {
+              sans: ['"Be Vietnam Pro"', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+    <!-- Top Persistent Navigation with 3-Way Switcher -->
+    <div id="top-nav"></div>
+
+    <!-- Main View Content Area -->
+    <div id="main-content" class="flex-1 flex overflow-hidden"></div>
+
+    <!-- Modal Dialogs Container -->
+    <div id="modal-container"></div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50"></div>
+
+    <!-- Application Scripts (Modular Vanilla JS, Zero Build Step) -->
+    <script src="js/data.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

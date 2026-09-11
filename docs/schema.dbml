@@ -1,0 +1,273 @@
+// ======================================================================
+// RESTAURANT OPERATIONS MANAGEMENT SYSTEM (GIA VI VIET POS & BACK OFFICE)
+// Database Schema Specification (DBML v2)
+// Compatible with: PostgreSQL / MySQL / SQLite / dbdiagram.io
+// ======================================================================
+
+Project restaurant_management_system {
+  database_type: 'PostgreSQL'
+  Note: '''
+    # Hệ Thống Quản Lý Vận Hành Nhà Hàng (Core MVP & Scale)
+    Được thiết kế theo phương pháp Top-Down Approach từ sơ đồ nghiệp vụ.
+    Bao gồm 5 phân hệ cốt lõi:
+    1. Quản lý Thực đơn (Menu)
+    2. Quản lý Bàn & Đặt chỗ (Tables & Reservations)
+    3. Quản lý Đơn hàng (Orders & Kitchen KDS)
+    4. Thanh toán & Hóa đơn (Billing, Payments & Loyalty)
+    5. Quản trị & Phân quyền (Users & RBAC)
+  '''
+}
+
+// ----------------------------------------------------------------------
+// 1. ENUMS (Các tập trạng thái chuẩn hóa nghiệp vụ)
+// ----------------------------------------------------------------------
+
+Enum role_type {
+  ADMIN       [note: 'Quản trị viên toàn quyền hệ thống']
+  MANAGER     [note: 'Quản lý nhà hàng (duyệt hủy món, sửa giá, xem báo cáo)']
+  CASHIER     [note: 'Thu ngân quầy (chốt hóa đơn, thu tiền, in phiếu)']
+  SERVER      [note: 'Nhân viên phục vụ sảnh (mở bàn, gọi món, đổi bàn)']
+  KITCHEN     [note: 'Nhân viên bếp / Bar (xem KDS, báo tiến độ, báo hết món)']
+}
+
+Enum dish_status {
+  AVAILABLE    [note: 'Đang kinh doanh bình thường']
+  OUT_OF_STOCK [note: 'Tạm hết hàng (bếp báo hết, sảnh không nhận order)']
+  DISCONTINUED [note: 'Ngừng kinh doanh hoàn toàn']
+}
+
+Enum table_status {
+  VACANT      [note: 'Bàn trống, sẵn sàng đón khách']
+  OCCUPIED    [note: 'Bàn đang có khách ngồi ăn']
+  RESERVED    [note: 'Bàn đã có khách đặt trước']
+  CLEANING    [note: 'Khách đã về, đang dọn dẹp']
+}
+
+Enum reservation_status {
+  PENDING     [note: 'Mới tạo, chờ xác nhận']
+  CONFIRMED   [note: 'Đã xác nhận giữ chỗ cho khách']
+  SEATED      [note: 'Khách đã đến và check-in vào bàn']
+  CANCELLED   [note: 'Khách chủ động hủy hẹn']
+  NO_SHOW     [note: 'Quá thời gian quy định khách không đến']
+}
+
+Enum order_status {
+  OPEN        [note: 'Đơn đang mở, đang nhận gọi món']
+  COOKING     [note: 'Đã gửi bếp, đang trong quá trình chế biến']
+  SERVED      [note: 'Đã lên đủ món cho khách']
+  COMPLETED   [note: 'Đã thanh toán xong và đóng đơn']
+  CANCELLED   [note: 'Hủy toàn bộ đơn hàng']
+}
+
+Enum order_item_status {
+  QUEUED      [note: 'Mới gửi xuống bếp, chờ nhận']
+  COOKING     [note: 'Đầu bếp đang nấu']
+  READY       [note: 'Nấu xong, chờ phục vụ bê ra bàn']
+  SERVED      [note: 'Đã giao ra bàn cho khách']
+  CANCELLED   [note: 'Món bị hủy (do hết nguyên liệu hoặc khách đổi ý có quản lý duyệt)']
+}
+
+Enum payment_method {
+  CASH        [note: 'Tiền mặt']
+  VIETQR      [note: 'Quét mã VietQR chuyển khoản ngân hàng']
+  CARD        [note: 'Thẻ ngân hàng (Visa, Master, NAPAS POS)']
+  WALLET      [note: 'Ví điện tử (MoMo, ZaloPay, ShopeePay)']
+}
+
+Enum membership_tier {
+  STANDARD    [note: 'Thành viên mới']
+  SILVER      [note: 'Thành viên Bạc (giảm 5%)']
+  GOLD        [note: 'Thành viên Vàng (giảm 10%)']
+  PLATINUM    [note: 'Thành viên Bạch kim (giảm 15%)']
+}
+
+Enum discount_type {
+  PERCENTAGE   [note: 'Giảm theo tỷ lệ phần trăm (vd: 10%)']
+  FIXED_AMOUNT [note: 'Giảm theo số tiền cố định (vd: 20.000đ)']
+}
+
+// ----------------------------------------------------------------------
+// 2. PHÂN HỆ QUẢN TRỊ & NHÂN SỰ (Back Office RBAC)
+// ----------------------------------------------------------------------
+
+Table roles {
+  id          bigint      [pk, increment]
+  name        role_type   [unique, not null]
+  description text
+  created_at  timestamp   [default: `now()`]
+
+  Note: 'Bảng vai trò phân quyền nhân viên'
+}
+
+Table users {
+  id            bigint      [pk, increment]
+  username      varchar(50) [unique, not null]
+  password_hash varchar(255) [not null]
+  full_name     varchar(100) [not null]
+  role_id       bigint      [not null, ref: > roles.id]
+  phone         varchar(20)
+  is_active     boolean     [default: true, not null]
+  created_at    timestamp   [default: `now()`]
+  updated_at    timestamp   [default: `now()`]
+
+  Note: 'Tài khoản nhân viên đăng nhập máy POS & hệ thống quản trị'
+}
+
+// ----------------------------------------------------------------------
+// 3. PHÂN HỆ THỰC ĐƠN (Menu Domain)
+// ----------------------------------------------------------------------
+
+Table categories {
+  id            bigint       [pk, increment]
+  name          varchar(100) [not null]
+  display_order int          [default: 0, note: 'Thứ tự ưu tiên hiển thị trên POS']
+  is_active     boolean      [default: true]
+  created_at    timestamp    [default: `now()`]
+
+  Note: 'Nhóm món ăn (Khai vị, Bò, Hải sản, Lẩu, Đồ uống, Tráng miệng)'
+}
+
+Table dishes {
+  id            bigint        [pk, increment]
+  category_id   bigint        [not null, ref: > categories.id]
+  sku           varchar(50)   [unique, not null, note: 'Mã định danh món ăn, vd: BO-FUJI-01']
+  name          varchar(150)  [not null]
+  price         bigint        [not null, note: 'Giá bán niêm yết hiện tại (VNĐ)']
+  cost_price    bigint        [default: 0, note: 'Giá vốn ước tính phục vụ báo cáo margin']
+  unit          varchar(20)   [not null, default: 'Phần', note: 'Đơn vị tính: Đĩa, Bát, Nồi, Ly']
+  image_url     text
+  description   text
+  status        dish_status   [default: 'AVAILABLE', not null]
+  is_bestseller boolean       [default: false]
+  vat_rate      int           [default: 8, note: 'Thuế suất VAT (%) áp dụng cho món']
+  created_at    timestamp     [default: `now()`]
+  updated_at    timestamp     [default: `now()`]
+
+  Note: 'Danh mục món ăn chi tiết'
+}
+
+// ----------------------------------------------------------------------
+// 4. PHÂN HỆ BÀN ĂN & ĐẶT CHỖ (Tables & Reservations)
+// ----------------------------------------------------------------------
+
+Table dining_tables {
+  id            bigint        [pk, increment]
+  table_number  varchar(20)   [unique, not null, note: 'Số bàn hiển thị, vd: 01, 05, VIP-1']
+  zone          varchar(50)   [not null, default: 'Tầng 1', note: 'Khu vực quán: Tầng 1, Tầng 2, Sân Vườn']
+  capacity      int           [not null, default: 4, note: 'Sức chứa tối đa (số người)']
+  status        table_status  [default: 'VACANT', not null]
+  created_at    timestamp     [default: `now()`]
+
+  Note: 'Sơ đồ mặt bằng bàn ăn'
+}
+
+Table reservations {
+  id                bigint             [pk, increment]
+  table_id          bigint             [null, ref: > dining_tables.id, note: 'Gán trước bàn hoặc xếp khi khách đến']
+  customer_name     varchar(100)       [not null]
+  phone             varchar(20)        [not null]
+  party_size        int                [not null, default: 2]
+  reservation_time  timestamp          [not null]
+  note              text
+  status            reservation_status [default: 'PENDING', not null]
+  created_at        timestamp          [default: `now()`]
+
+  Note: 'Sổ quản lý lịch hẹn đặt bàn trước của khách'
+}
+
+// ----------------------------------------------------------------------
+// 5. PHÂN HỆ ĐƠN HÀNG & BẾP (Orders & Kitchen KDS)
+// ----------------------------------------------------------------------
+
+Table orders {
+  id            bigint        [pk, increment]
+  order_code    varchar(50)   [unique, not null, note: 'Mã phiên order, vd: #ORD-8821']
+  table_id      bigint        [not null, ref: > dining_tables.id]
+  server_id     bigint        [not null, ref: > users.id, note: 'Nhân viên mở bàn và nhận order']
+  guest_count   int           [default: 1]
+  status        order_status  [default: 'OPEN', not null]
+  opened_at     timestamp     [default: `now()`, not null]
+  closed_at     timestamp     [null]
+
+  Note: 'Phiên gọi món gắn với bàn ăn cụ thể'
+}
+
+Table order_items {
+  id                  bigint            [pk, increment]
+  order_id            bigint            [not null, ref: > orders.id]
+  dish_id             bigint            [not null, ref: > dishes.id]
+  quantity            int               [not null, default: 1, note: 'Số lượng gọi món']
+  unit_price          bigint            [not null, note: 'CRITICAL SNAPSHOT: Giá bán tại thời điểm gọi món']
+  cooking_note        varchar(255)      [null, note: 'Ghi chú riêng: Ít ngọt, Không cay, Nóng...']
+  status              order_item_status [default: 'QUEUED', not null]
+  sent_to_kitchen_at  timestamp         [default: `now()`]
+  cancelled_reason    varchar(255)      [null, note: 'Lý do hủy nếu có']
+  approved_by         bigint            [null, ref: > users.id, note: 'Quản lý duyệt hủy món nếu đã chuyển bếp']
+
+  Note: 'Dòng chi tiết từng món ăn trong đơn gọi món'
+}
+
+// ----------------------------------------------------------------------
+// 6. PHÂN HỆ THANH TOÁN & HÓA ĐƠN (Billing, Payments & Loyalty)
+// ----------------------------------------------------------------------
+
+Table customers {
+  id                bigint            [pk, increment]
+  phone             varchar(20)       [unique, not null]
+  full_name         varchar(100)      [not null]
+  membership_tier   membership_tier   [default: 'STANDARD', not null]
+  loyalty_points    int               [default: 0, not null, note: 'Điểm tích lũy hiện có']
+  created_at        timestamp         [default: `now()`]
+
+  Note: 'Hồ sơ khách hàng thân thiết tích điểm'
+}
+
+Table vouchers {
+  id                  bigint          [pk, increment]
+  code                varchar(50)     [unique, not null, note: 'Mã nhập, vd: VIPGOLD10']
+  discount_type       discount_type   [not null]
+  discount_value      bigint          [not null, note: '% hoặc số tiền cụ thể']
+  min_order_value     bigint          [default: 0]
+  max_discount_amount bigint          [null, note: 'Giới hạn giảm tối đa (nếu là %)']
+  valid_from          timestamp       [not null]
+  valid_until         timestamp       [not null]
+  is_active           boolean         [default: true]
+
+  Note: 'Chương trình khuyến mãi & mã giảm giá'
+}
+
+Table invoices {
+  id                  bigint          [pk, increment]
+  invoice_code        varchar(50)     [unique, not null, note: 'Mã hóa đơn VAT, vd: #HD-2026-0001']
+  order_id            bigint          [unique, not null, ref: - orders.id]
+  customer_id         bigint          [null, ref: > customers.id]
+  voucher_id          bigint          [null, ref: > vouchers.id]
+  
+  // Financial Snapshots (Bất biến kế toán)
+  subtotal            bigint          [not null, note: 'Tổng tiền nguyên giá các món ăn']
+  voucher_discount    bigint          [default: 0, not null, note: 'Tiền giảm từ voucher']
+  points_discount     bigint          [default: 0, not null, note: 'Tiền giảm từ điểm tích lũy']
+  service_fee_rate    int             [default: 5, note: 'Tỷ lệ phí dịch vụ (%)']
+  service_fee_amount  bigint          [default: 0, not null, note: 'Số tiền phí dịch vụ']
+  vat_rate            int             [default: 8, note: 'Tỷ lệ thuế GTGT (%)']
+  vat_amount          bigint          [default: 0, not null, note: 'Số tiền thuế GTGT']
+  final_total         bigint          [not null, note: 'TỔNG TIỀN PHẢI THU (đã làm tròn)']
+
+  cashier_id          bigint          [not null, ref: > users.id, note: 'Thu ngân thực hiện chốt đơn']
+  created_at          timestamp       [default: `now()`]
+
+  Note: 'Hóa đơn thanh toán chính thức'
+}
+
+Table payments {
+  id                  bigint          [pk, increment]
+  invoice_id          bigint          [not null, ref: > invoices.id]
+  payment_method      payment_method  [not null]
+  amount_paid         bigint          [not null, note: 'Số tiền thực tế thanh toán qua kênh này']
+  amount_tendered     bigint          [null, note: 'Tiền khách đưa (nếu là tiền mặt)']
+  change_given        bigint          [default: 0, note: 'Tiền thối lại cho khách (nếu là tiền mặt)']
+  transaction_ref     varchar(100)    [null, note: 'Mã tham chiếu ngân hàng/VietQR/POS']
+  paid_at             timestamp       [default: `now()`]
+
+  Note: 'Giao dịch thanh toán (hỗ trợ tách bill hoặc kết hợp nhiều hình thức thanh toán)'
+}

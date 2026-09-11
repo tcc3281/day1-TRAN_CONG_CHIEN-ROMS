@@ -1,101 +1,11 @@
-# Restaurant Operations Management System
+# Sơ Đồ Thực Thể Quan Hệ Cơ Sở Dữ Liệu (Database ERD)
+**Hệ Thống Quản Lý Vận Hành Nhà Hàng (Gia Vị Việt POS & Back Office)**
 
-## 1. Problem Statement
-
-Running a restaurant manually or with fragmented tools causes severe operational bottlenecks:
-
-* **Order inaccuracies & miscommunication**: Hand-written orders lead to missing items, delayed cooking, and incorrect kitchen modifications.
-* **Billing errors & slow turnover**: Manual bill calculations with discounts, service charges, and VAT increase checkout delays and cashier discrepancies.
-* **Disconnected operations**: Front-of-house (servers), kitchen, and back-office (management) lack real-time synchronization on table statuses, depleted ingredients, and sales numbers.
-
-### The Objective
-
-Design and build an integrated, end-to-end **Restaurant Operations Management System** using a **Top-Down Approach**:
-
-* **Phase 1 (Minimum Viable Core)**: Digitize the 3 mission-critical functions — **Menu Management**, **Order Taking (POS)**, and **Billing & Payment** — allowing the business to take orders and collect revenue seamlessly.
-* **Human-in-the-Loop Fallback**: Non-core features (such as physical table assignment, oral kitchen callouts, and manual inventory spreadsheets) are temporarily managed by staff until subsequent phases.
+Tài liệu này thể hiện cấu trúc lược đồ Cơ sở dữ liệu và quan hệ giữa các bảng (Entities) được phân tích từ sơ đồ nghiệp vụ [`docs/top-down-approach-mindmap.png`](top-down-approach-mindmap.png) và tệp định nghĩa DBML [`docs/schema.dbml`](schema.dbml).
 
 ---
 
-## 2. Feature Breakdown (`docs/top-down-approach-mindmap.png`)
-
-Based on the [Top-Down Architecture Mindmap](docs/top-down-approach-mindmap.png), the system is decomposed into 5 core functional modules:
-
-```
-                          ┌─ 1. Table & Reservation Management
-                          ├─ 2. Order Management (POS) [Core Phase 1]
-Restaurant Operations ────┼─ 3. Kitchen Coordination (KDS)
-      System              ├─ 4. Back Office Management [Core Phase 1]
-                          └─ 5. Payment & Invoicing [Core Phase 1]
-```
-
-### Module 1: Table & Reservation Management (Quản lý Bàn & Đặt chỗ)
-
-* **Floor Plan Layout (Sắp xếp không gian quán)**:
-  * Displays a visual table layout organized by dining zones (Floor 1, VIP rooms, Outdoor).
-  * Uses color-coded indicators to quickly identify table states (*Vacant, Occupied, Reserved*).
-* **Seating Coordination (Điều phối chỗ ngồi)**:
-  * Opens tables when new guests arrive.
-  * Merges adjacent tables into a single large table for group dining.
-  * Transfers all active ordered items from one table to another when guests relocate.
-* **Reservation Handling (Xử lý lịch hẹn trước)**:
-  * Records advance guest booking details (guest name, contact, party size, arrival time).
-  * Automatically/manually switches status from "Reserved" to "Serving" upon check-in.
-  * Cancels no-show reservations after a configured grace period.
-
-### Module 2: Order Management (Quản lý Đơn hàng) — *[Highlighted Core Phase 1]*
-
-* **Order Entry (Ghi nhận món ăn)**:
-  * Rapidly searches and filters dishes by category or name.
-  * Adjusts dish quantities on the fly with stepper controls `[- 1 +]`.
-  * Attaches custom dietary notes per line item (*e.g., no onion, less spicy, sauce on the side*).
-* **Information Handoff (Chuyển giao thông tin)**:
-  * Dispatches verified customer orders directly to the kitchen display and cashier desk.
-* **Order Incident Handling (Xử lý sự cố gọi món)**:
-  * Removes unsent items directly from the active cart.
-  * Submits item cancellation requests (requiring manager authorization) if food has already been sent to the kitchen.
-
-### Module 3: Kitchen Coordination (Điều phối Bếp / KDS)
-
-* **Order Reception (Tiếp nhận yêu cầu)**:
-  * Displays cooking tickets in chronological FIFO order (First In, First Out).
-  * Clearly highlights special customer dietary notes attached to each item.
-* **Preparation Progress (Báo tiến độ nấu nướng)**:
-  * Updates item preparation stages (*Preparing, Cooked, Ready for Pickup*).
-* **Stock Availability Alerting (Báo tình trạng món ăn)**:
-  * Toggles an item to "Out of Stock" instantly, preventing front-of-house staff from taking further orders for that dish.
-
-### Module 4: Back Office Management (Quản lý nhà hàng) — *[Highlighted Core Phase 1]*
-
-* **Menu Management (Quản lý thực đơn)**:
-  * Creates and updates dishes, sets base retail prices and VAT rates, uploads food photography, and structures dish categories.
-* **Inventory Tracking (Quản lý kho hàng)**:
-  * Monitors remaining raw ingredient balances in storage.
-  * Logs supplier replenishment shipments and purchase invoices.
-* **Staff & Access Control (Quản lý nhân sự)**:
-  * Provisions employee accounts and assigns role-based permissions (Cashier, Server, Chef, Admin).
-* **Business Performance Analytics (Theo dõi hiệu quả kinh doanh)**:
-  * Renders revenue charts across daily, weekly, and monthly intervals.
-  * Compiles top 5 best-selling dishes and underperforming items.
-
-### Module 5: Payment & Invoicing (Thanh toán & Hóa đơn) — *[Highlighted Core Phase 1]*
-
-* **Bill Calculation (Tính tiền)**:
-  * Generates pre-bill previews summarizing food items, applied voucher codes, service fees (5%), and VAT (8%).
-  * Deducts accumulated customer loyalty points.
-* **Flexible Payments (Hỗ trợ cách trả tiền linh hoạt)**:
-  * Supports multiple payment channels: Cash (with automatic change calculator), VietQR dynamic transfer, POS card swipe, and E-Wallets.
-* **Document Handover (Bàn giao chứng từ)**:
-  * Prints thermal pre-bills for table-side guest review.
-  * Finalizes the sale and issues official electronic VAT invoices, automatically clearing the table for the next party.
-  * 
-
----
-
-## 3. Database Architecture & Schema
-
-File dbml schema is located in [`docs/schema.dbml`](docs/schema.dbml).
-File svg ERD is located in [`docs/schema.svg`](docs/schema.svg).
+## 1. Sơ Đồ Trực Quan Mermaid ERD (Đầy Đủ Các Trường & Quan Hệ)
 
 ```mermaid
 erDiagram
@@ -240,11 +150,18 @@ erDiagram
         timestamp paid_at "Thời điểm xác nhận thanh toán"
     }
 ```
+
 ---
 
-## 4. Interactive Frontend Prototype
+## 2. Giải Thích Bản Chất Các Mối Quan Hệ (Cardinality)
 
-The interactive prototype for the 3 Phase 1 core modules is located in [`frontend/`](frontend/):
-* Simply open [`frontend/index.html`](frontend/index.html) in your browser.
-* No build tools, Node.js, or Docker required.
-
+| Mối quan hệ | Ký hiệu Mermaid | Ý nghĩa nghiệp vụ thực tế |
+| :--- | :---: | :--- |
+| `ROLES` $\rightarrow$ `USERS` | `||--o{` (1 - N) | 1 Vai trò (Phục vụ, Thu ngân, Bếp, Quản lý) được gán cho nhiều nhân viên. |
+| `CATEGORIES` $\rightarrow$ `DISHES` | `||--o{` (1 - N) | 1 Nhóm thực đơn (Khai vị, Lẩu, Đồ uống) chứa nhiều món ăn. |
+| `DINING_TABLES` $\rightarrow$ `ORDERS` | `||--o{` (1 - N) | 1 Bàn ăn qua thời gian sẽ tiếp đón nhiều lượt đơn hàng khác nhau. |
+| `ORDERS` $\rightarrow$ `ORDER_ITEMS` | `||--|{` (1 - N) | 1 Đơn hàng bắt buộc phải có ít nhất 1 dòng món ăn được gọi. |
+| `DISHES` $\rightarrow$ `ORDER_ITEMS` | `||--o{` (1 - N) | 1 Món ăn trên menu có thể xuất hiện trong nhiều lần gọi món của nhiều đơn. |
+| `ORDERS` $\rightarrow$ `INVOICES` | `||--||` (1 - 1) | Mỗi phiên phục vụ bàn chốt đúng 1 Hóa đơn thanh toán duy nhất. |
+| `INVOICES` $\rightarrow$ `PAYMENTS` | `||--|{` (1 - N) | 1 Hóa đơn có thể thanh toán bằng 1 hoặc nhiều giao dịch (hỗ trợ thanh toán hỗn hợp: 50% tiền mặt + 50% VietQR, hoặc tách bill). |
+| `USERS` $\rightarrow$ `ORDER_ITEMS` | `||--o{` (1 - N) | Khóa ngoại `approved_by` lưu ID Quản lý đã ký duyệt hủy món khi món đã gửi bếp. |

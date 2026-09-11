@@ -2,11 +2,7 @@
 
 ## 1. Problem Statement
 
-Running a restaurant manually or with fragmented tools causes severe operational bottlenecks:
-
-* **Order inaccuracies & miscommunication**: Hand-written orders lead to missing items, delayed cooking, and incorrect kitchen modifications.
-* **Billing errors & slow turnover**: Manual bill calculations with discounts, service charges, and VAT increase checkout delays and cashier discrepancies.
-* **Disconnected operations**: Front-of-house (servers), kitchen, and back-office (management) lack real-time synchronization on table statuses, depleted ingredients, and sales numbers.
+![Top-Down Approach Mindmap](docs/top-down-approach-mindmap.png)
 
 ### The Objective
 
@@ -88,14 +84,50 @@ Restaurant Operations ────┼─ 3. Kitchen Coordination (KDS)
 * **Document Handover (Bàn giao chứng từ)**:
   * Prints thermal pre-bills for table-side guest review.
   * Finalizes the sale and issues official electronic VAT invoices, automatically clearing the table for the next party.
-  * 
 
 ---
 
-## 3. Database Architecture & Schema
+## 3. Selected Core Features (Phase 1 MVP)
 
-File dbml schema is located in [`docs/schema.dbml`](docs/schema.dbml).
-File svg ERD is located in [`docs/schema.svg`](docs/schema.svg).
+To resolve immediate operational bottlenecks while keeping scope manageable, **3 mission-critical features** were selected from the mindmap for Phase 1 implementation. Non-core functions (such as physical table seating, oral kitchen callouts, and manual inventory spreadsheets) temporarily operate under a **Human-in-the-Loop** model.
+
+### Feature 1: Menu Management (Quản lý Thực đơn)
+* **Operational Scope**:
+  * Structures food & beverage offerings into clear categories (Appetizers, Beef, Seafood, Hotpot, Drinks, Desserts) with display ordering.
+  * Maintains dish metadata: retail price, estimated cost price (for gross margin reporting), serving units, and VAT tax rate (8%).
+  * **Real-time Stock Toggling**: Kitchen and management can instantly switch dish availability between `Available` (Đang bán) and `Out of Stock` (Tạm hết), synchronizing in real time with front-of-house ordering to prevent taking orders for depleted items.
+
+### Feature 2: Order Taking / POS (Ghi nhận Gọi món)
+* **Operational Scope**:
+  * High-speed dish search and category filtering for swift table-side or counter ordering.
+  * Line-item quantity stepper adjustments `[- 1 +]`.
+  * **Custom Cooking Notes**: Attaches dietary requests per item (*e.g., "no onions", "less spicy", "sauce on the side"*).
+  * Real-time order cart summarizing active items with subtotal previews before dispatching to the kitchen.
+
+### Feature 3: Billing & Invoicing (Thanh toán & Hóa đơn)
+* **Operational Scope**:
+  * **Automated Financial Calculation**: Automatically computes food subtotal, validates discount vouchers (% or fixed amount), deducts VIP loyalty points, adds 5% service fee, and applies 8% VAT.
+  * **Thermal Pre-Bill Printing**: Issues a pre-bill preview for table-side guest review before collecting payment.
+  * **Multi-Channel Settlement**: Processes Cash (with automatic change calculation and quick tender presets), dynamic VietQR transfer codes, bank card POS swipes, and E-Wallets.
+  * **Table Release**: Finalizes the sale, issues official electronic VAT invoices, and releases the table for the next dining party.
+
+---
+
+## 4. Database Architecture & Schema
+
+The database architecture is designed directly around the **3 Selected Core Features** while establishing a robust foundation for the full 5 domains of restaurant operations:
+
+* **Menu Domain** (`categories`, `dishes`): Centralized catalog, pricing, cost tracking, and instant stock availability.
+* **Order Domain** (`orders`, `order_items`): Active dining sessions, line items with cooking notes, and the **Price Snapshot Pattern** (`unit_price`) to safeguard historical revenue records against future price edits.
+* **Billing & Loyalty Domain** (`invoices`, `payments`, `vouchers`, `customers`): **Financial Immutability** upon invoice creation, loyalty points deduction, voucher discounts, and multi-channel payment records.
+* **Operations & RBAC Domain** (`dining_tables`, `reservations`, `roles`, `users`): Floor plan zones, advance bookings, and role-based permissions.
+
+### 4.1 Schema Specifications & Documentation
+* **DBML Specification**: [`docs/schema.dbml`](docs/schema.dbml)
+* **Detailed Visual ERD**: [`docs/database-erd.md`](docs/database-erd.md)
+* **Vector ERD Graphic**: [`docs/schema.svg`](docs/schema.svg)
+
+### 4.2 Visual Entity-Relationship Diagram
 
 ```mermaid
 erDiagram
@@ -242,9 +274,18 @@ erDiagram
 ```
 ---
 
-## 4. Interactive Frontend Prototype
+## 5. Interactive Frontend Prototype
 
-The interactive prototype for the 3 Phase 1 core modules is located in [`frontend/`](frontend/):
-* Simply open [`frontend/index.html`](frontend/index.html) in your browser.
-* No build tools, Node.js, or Docker required.
+The interactive prototype now brings together the full end-to-end operational loop across **4 integrated modules** in [`frontend/`](frontend/):
+
+* **Tab 1: POS Gọi Món (Order Taking)** (`frontend/js/app.js`): Fast dish search, category filtering, steppers, dietary cooking notes modal, and cart items showing live kitchen preparation badges.
+* **Tab 2: Bếp & Bar (KDS - Kitchen Display System)** (`frontend/js/app.js`): Chronological FIFO tickets with color urgency alerts (Green = New, Orange = Cooking, Red = Overdue >15 min), touch actions to advance cooking stages (`QUEUED` $\to$ `COOKING` $\to$ `READY`), quick dish 86 (Out of Stock) modal, and ticket recall.
+* **Tab 3: Quầy Thu Ngân (Cashier & Invoicing)** (`frontend/js/app.js`): Real-time bill calculations (VAT 8%, 5% service fee), voucher validation, VIP points redemption, dynamic VietQR, thermal pre-bill printing, and cash change calculator.
+* **Tab 4: Quản Lý Thực Đơn (Menu Admin)** (`frontend/js/app.js`): Dish drawer, price/cost editing, gross margin calculation, category management, and instant stock toggle synchronized with POS and KDS.
+* **Sơ đồ Bàn & Đổi Bàn (Table Selector)**: Clickable table switcher in the top bar to inspect and transition between dining tables (Bàn 01, Bàn 02, Bàn 05, Bàn VIP-1, Bàn 10) with live status indicators (`VACANT`, `OCCUPIED`, `RESERVED`).
+
+### How to Run
+* Simply open [`frontend/index.html`](frontend/index.html) directly in any modern browser.
+* Built with pure Vanilla JS and Tailwind CSS CDN — **Zero build steps, zero Node.js / Docker setup required**.
+
 

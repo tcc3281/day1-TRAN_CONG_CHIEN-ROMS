@@ -22,7 +22,7 @@ Restaurant Operations ────┼─ 3. Kitchen Coordination (KDS)
 | :-------------------------------------- | :------------------------------------------------------------------------------------------ | :------------: |
 | **1. Table & Reservation**        | Visual floor plan, table statuses, seating coordination, advance reservations               |                |
 | **2. Order Taking (POS)**         | Fast dish catalog search, live cart, dietary notes, add-on order batches                    | **Core** |
-| **3. Kitchen Coordination (KDS)** | Chronological FIFO tickets, station routing (Hot/Cold/Bar), cooking stages, 86 dish alert   |                |
+| **3. Kitchen Coordination (KDS)** | Chronological FIFO tickets, station routing (Hot/Cold/Bar), cooking stages, out-of-stock alert (báo hết món) |                |
 | **4. Menu Management**            | Catalog hierarchy, pricing, VAT, cost margin, instant stock availability toggle             | **Core** |
 | **5. Billing & Invoicing**        | Pre-bill calculation, vouchers, VIP points, multi-channel payment (Cash/VietQR/Card/Wallet) | **Core** |
 
@@ -58,7 +58,7 @@ To resolve immediate operational bottlenecks with optimal resources, **3 mission
 Derived from the functional breakdown, the system defines 4 internal user roles and 1 external supporting system:
 
 * **👤 Waitstaff (Server)**: Table seating, table-side ordering, item dietary notes, KDS dispatch.
-* **👨‍🍳 Kitchen / Bar Staff**: FIFO order queue processing, cooking stages progression, 86 (out-of-stock) alert.
+* **👨‍🍳 Kitchen / Bar Staff**: FIFO order queue processing, cooking stages progression, out-of-stock alert (báo hết món).
 * **💳 Cashier**: Pre-bill thermal printing, voucher & VIP point redemption, multi-channel payment reconciliation.
 * **👔 Restaurant Manager / Admin**: Catalog maintenance, pricing/gross margin control, cancellation approval.
 * **🏦 VietQR / Bank Gateway**: Dynamic QR generation and payment confirmation.
@@ -103,7 +103,7 @@ Operates on touch-enabled Kitchen Display Systems (KDS) for chronological culina
   * `UC-KIT-02`: Filter active tickets by station specialization (Hot Kitchen / Cold Salad / Bar).
   * `UC-KIT-03`: Claim item preparation stage (`QUEUED` $\to$ `COOKING`).
   * `UC-KIT-04`: Mark finished dishes as ready (`COOKING` $\to$ `READY`) to notify service runners.
-  * `UC-KIT-05`: Instant 86 (Out-of-Stock) alert switch to freeze depleted items across all POS terminals.
+  * `UC-KIT-05`: Instant out-of-stock alert switch (báo hết món tức thì) to freeze depleted items across all POS terminals.
 
 ---
 
@@ -138,7 +138,125 @@ Provides centralized governance over menu engineering, loss-prevention controls,
 
 ---
 
-## 5. Database Architecture & Detailed ERD
+## 5. Information Architecture & Wireframes (IA)
+
+Bridging use case specifications to UI prototyping, the system architecture establishes clear screen hierarchy, operational decision task flows, and ergonomic low-fidelity wireframes:
+
+* **Sitemap Mindmap**: High-level hierarchy connecting floor seating, table-side ordering, KDS, cashier settlement, and back office.
+* **Ergonomic Spatial Layout**: Designed for rapid touch input, clear visual hierarchy, and instant operational feedback.
+* **Standardized Nomenclature**: Unifying action labels (`Gửi Bếp`, `In Tạm Tính`, `Chốt Đơn & Thanh Toán`) and entity lifecycle states.
+
+> 📄 **Complete IA Specification**: For detailed decision task flows (If/Else flowcharts), complete wireframe annotations, and metadata taxonomy dictionaries, see [`docs/information-architecture.md`](docs/information-architecture.md).
+
+### 5.1. Screen Hierarchy & Sitemap Mindmap
+
+![Information Architecture Sitemap Mindmap](docs/ia-sitemap-mindmap.png)
+
+### 5.2. Operational Decision Task Flows (Mermaid Workflows)
+
+Standardized decision-tree workflows (`If/Else` branching) to prevent operational dead-ends and enforce validation across floor, kitchen, and checkout:
+
+#### 5.2.1. Table Seating & Guest Check-In Flow
+```mermaid
+flowchart TD
+    START([Start: Guest Arrives]) --> CLICK_TABLE[Server taps Table on Floor Plan]
+    CLICK_TABLE --> CHECK_STATUS{Current Table Status?}
+
+    CHECK_STATUS -->|🟢 VACANT| OPEN_MODAL[Display 'Open Table' Modal]
+    CHECK_STATUS -->|🔴 OCCUPIED| GO_POS[Navigate directly to active Table POS Cart]
+    CHECK_STATUS -->|🟡 RESERVED| CHECK_RESERVE{Guest matches reservation?}
+
+    CHECK_RESERVE -->|Match| OPEN_MODAL
+    CHECK_RESERVE -->|Mismatch / Walk-in| WARN_ALERT["Warning: Table reserved for another guest"]
+    WARN_ALERT --> CHOOSE_ANOTHER[Select another vacant table] --> CLICK_TABLE
+
+    OPEN_MODAL --> INPUT_GUESTS[Enter guest count & assign server code]
+    INPUT_GUESTS --> CONFIRM_OPEN[Tap 'Open Table' button]
+    CONFIRM_OPEN --> UPDATE_DB["Update Table to 🔴 OCCUPIED & generate Order ID"]
+    UPDATE_DB --> REDIRECT_POS[Automatically redirect to POS Ordering view]
+    REDIRECT_POS --> END1([End Flow])
+```
+
+#### 5.2.2. POS Ordering, Stock Validation & Kitchen Dispatch Flow
+```mermaid
+flowchart TD
+    START2([Server selects items for table]) --> SEARCH_DISH[Search SKU/Name or tap Dish Card]
+    SEARCH_DISH --> CHECK_STOCK{Is item Out of Stock / Hết hàng?}
+
+    CHECK_STOCK -->|Yes - Out of Stock| SHOW_OUT_ERROR["Display alert: Temporarily Out of Stock"]
+    SHOW_OUT_ERROR --> SUGGEST_ALT[Suggest alternative item to guest]
+    SUGGEST_ALT --> SEARCH_DISH
+
+    CHECK_STOCK -->|No - Available| ADD_CART[Add item to Table Cart]
+    ADD_CART --> HAS_NOTE{Guest has custom notes/allergies?}
+  
+    HAS_NOTE -->|Yes| INPUT_NOTE["Input note: 'less spicy, no onions, sauce on side'"]
+    HAS_NOTE -->|No| CHECK_SEND
+
+    INPUT_NOTE --> CHECK_SEND{Server confirms 'Send to Kitchen'?}
+    CHECK_SEND -->|No, continue ordering| SEARCH_DISH
+    CHECK_SEND -->|Yes, tap Send| DISPATCH_TICKET[Dispatch electronic ticket to Kitchen KDS]
+
+    DISPATCH_TICKET --> KDS_RECEIVE[Kitchen KDS receives FIFO ticket with audio alert]
+    KDS_RECEIVE --> END2(["Order status transitions to COOKING"])
+```
+
+#### 5.2.3. Cashier Billing, Multi-Payment & Table Release Flow
+```mermaid
+flowchart TD
+    START3([Guest requests bill]) --> CASHIER_SELECT[Cashier selects target Table]
+    CASHIER_SELECT --> PRINT_PREBILL[Print 80mm Pre-Bill for guest verification]
+    PRINT_PREBILL --> GUEST_CHECK{Guest verifies bill items & total?}
+
+    GUEST_CHECK -->|Discrepancy / Modification| CALL_SERVER[Server & Manager adjust cart items]
+    CALL_SERVER --> CASHIER_SELECT
+
+    GUEST_CHECK -->|Approved| CHOOSE_METHOD{Guest chooses payment method?}
+
+    %% Branch 1: Cash
+    CHOOSE_METHOD -->|Cash| INPUT_CASH[Enter cash received amount]
+    INPUT_CASH --> CHECK_ENOUGH{Cash received >= Total bill?}
+    CHECK_ENOUGH -->|Insufficient| RE_INPUT[Prompt guest for remaining cash] --> INPUT_CASH
+    CHECK_ENOUGH -->|Sufficient| CALC_CHANGE[System calculates exact change return]
+    CALC_CHANGE --> FINALIZE_PAY
+
+    %% Branch 2: Dynamic VietQR
+    CHOOSE_METHOD -->|VietQR| GEN_QR[Display dynamic VietQR with exact bill amount]
+    GEN_QR --> GUEST_SCAN[Guest scans VietQR via Mobile Banking App]
+    GUEST_SCAN --> CHECK_BANK{Bank Webhook confirms receipt?}
+    CHECK_BANK -->|Pending| WAIT_BANK[Awaiting payment confirmation] --> CHECK_BANK
+    CHECK_BANK -->|Received| FINALIZE_PAY
+
+    %% Settlement Finalization
+    FINALIZE_PAY[Seal immutable INVOICE record]
+    FINALIZE_PAY --> RELEASE_TABLE["Update Table status to 🟢 VACANT"]
+    RELEASE_TABLE --> PRINT_FINAL[Print official fiscal VAT receipt]
+    PRINT_FINAL --> END3([Transaction Completed])
+```
+
+---
+
+### 5.3. Core View Wireframes
+
+#### A. Table-Side POS Ordering View
+![Wireframe POS Ordering](docs/wireframe-pos-ordering.png)
+* **Ergonomic Focus**: Top quick navigation tabs, centered 6-card dish catalog with fuzzy search/filter, and right-side cart with real-time bill preview & direct "Trans2 kitchen" / "Payment" triggers.
+
+#### B. Kitchen & Bar Display System (KDS)
+![Wireframe Kitchen KDS](docs/wireframe-kitchen-kds.png)
+* **Ergonomic Focus**: Chronological FIFO table ticket queue (`Table A`, `Table B`), clear dish-item breakdown, and 1-tap `Completed` button to synchronize preparation status with floor staff.
+
+#### C. Cashier & Invoicing View
+![Wireframe Cashier Billing](docs/wireframe-cashier-billing.png)
+* **Ergonomic Focus**: Top active table tabs, left bill breakdown (dishes, voucher, subtotal, VAT), and right customer loyalty info with dynamic multi-method settlement (Cash, VietQR, Card).
+
+#### D. Admin & Margin Governance View
+![Wireframe Admin Menu](docs/wireframe-admin-menu.png)
+* **Ergonomic Focus**: Top KPI summary cards (Gross Margin %, shift revenue, active dishes) over the central menu catalog datatable with cost/price tracking and instant stock status toggling.
+
+---
+
+## 6. Database Architecture & Detailed ERD
 
 The database schema is engineered directly around the **3 Selected Core Features** with enterprise-grade data integrity:
 
@@ -294,12 +412,12 @@ erDiagram
 
 ---
 
-## 6. Interactive Frontend Prototype
+## 7. Interactive Frontend Prototype
 
 The system includes a fully functional interactive prototype in [`frontend/`](frontend/):
 
 1. **POS Order Taking**: Fast catalog search, table cart, add-on item tags, send-to-kitchen dispatch.
-2. **Kitchen & Bar (KDS)**: FIFO ticket progression (`QUEUED` $\to$ `COOKING` $\to$ `READY` $\to$ `SERVED`), station filtering, out-of-stock quick 86.
+2. **Kitchen & Bar (KDS)**: FIFO ticket progression (`QUEUED` $\to$ `COOKING` $\to$ `READY` $\to$ `SERVED`), station filtering, instant out-of-stock alert (báo hết món).
 3. **Cashier & Billing**: Active table pre-bill list, 1-click table switcher, pre-bill thermal printing, VietQR generation, cash change calculator.
 4. **Menu Management**: Dish CRUD, cost/pricing editor, margin reporting, live stock toggle.
 

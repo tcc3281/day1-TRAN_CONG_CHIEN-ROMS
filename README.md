@@ -63,7 +63,6 @@ Derived from the functional breakdown, the system defines 4 internal user roles 
 * **👔 Restaurant Manager / Admin**: Catalog maintenance, pricing/gross margin control, cancellation approval.
 * **🏦 VietQR / Bank Gateway**: Dynamic QR generation and payment confirmation.
 
-> 🌐 **Interactive Diagram Viewer**: Open [`docs/usecase-diagrams.html`](docs/usecase-diagrams.html) in any browser to inspect crisp vector SVG diagrams and switch seamlessly between English and Vietnamese.
 > 📄 **Detailed Specifications**: See [`docs/usecase-diagram-en.md`](docs/usecase-diagram-en.md) (English) and [`docs/usecase-diagram.md`](docs/usecase-diagram.md) (Vietnamese).
 
 ---
@@ -412,16 +411,43 @@ erDiagram
 
 ---
 
-## 7. Interactive Frontend Prototype
+## 7. Interactive Frontend Prototype & UI Screenshots
 
-The system includes a fully functional interactive prototype in [`frontend/`](frontend/):
-
-1. **POS Order Taking**: Fast catalog search, table cart, add-on item tags, send-to-kitchen dispatch.
-2. **Kitchen & Bar (KDS)**: FIFO ticket progression (`QUEUED` $\to$ `COOKING` $\to$ `READY` $\to$ `SERVED`), station filtering, instant out-of-stock alert (báo hết món).
-3. **Cashier & Billing**: Active table pre-bill list, 1-click table switcher, pre-bill thermal printing, VietQR generation, cash change calculator.
-4. **Menu Management**: Dish CRUD, cost/pricing editor, margin reporting, live stock toggle.
+The system includes a fully functional interactive prototype in [`frontend/`](frontend/), demonstrating the complete operational cycle from floor ordering to kitchen coordination, cashier settlement, and menu margin governance:
 
 ### How to Run
 
 * Open [`frontend/index.html`](frontend/index.html) directly in any modern browser.
 * Built with **Pure Vanilla JS + Tailwind CSS CDN** — zero build steps, zero dependencies.
+
+---
+
+### 7.1. POS Order Taking View
+
+Fast catalog search, category filtering, table cart with dietary notes, and instant out-of-stock indicators:
+
+![UI POS Ordering](docs/ui-pos-ordering.png)
+
+---
+
+### 7.2. Kitchen & Bar Display System (KDS) View
+
+Dark-mode ergonomic interface with real-time FIFO ticket queue, station filtering (Hot/Cold/Bar), cooking stage progression (`QUEUED` $\to$ `COOKING` $\to$ `READY`), and instant out-of-stock alert switch:
+
+![UI Kitchen KDS](docs/ui-kitchen-kds.png)
+
+---
+
+### 7.3. Cashier & Multi-Channel Billing View
+
+Split-screen reconciliation with active table switcher, pre-bill thermal receipt preview, VIP customer loyalty discount, and multi-method payment (Cash change calculator, dynamic VietQR):
+
+![UI Cashier Billing](docs/ui-cashier-billing.png)
+
+---
+
+### 7.4. Menu Management & Margin Governance View
+
+Centralized back-office dashboard displaying key financial metrics (Gross Margin %, shift revenue), catalog CRUD operations, and live stock synchronization across POS terminals:
+
+![UI Admin Menu](docs/ui-admin-menu.png)

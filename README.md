@@ -53,7 +53,92 @@ To resolve immediate operational bottlenecks with optimal resources, **3 mission
 
 ---
 
-## 4. Database Architecture & Detailed ERD
+## 4. Actor Roles & Use Case Diagrams
+
+Derived from the functional breakdown, the system defines 4 internal user roles and 1 external supporting system:
+
+* **👤 Waitstaff (Server)**: Table seating, table-side ordering, item dietary notes, KDS dispatch.
+* **👨‍🍳 Kitchen / Bar Staff**: FIFO order queue processing, cooking stages progression, 86 (out-of-stock) alert.
+* **💳 Cashier**: Pre-bill thermal printing, voucher & VIP point redemption, multi-channel payment reconciliation.
+* **👔 Restaurant Manager / Admin**: Catalog maintenance, pricing/gross margin control, cancellation approval.
+* **🏦 VietQR / Bank Gateway**: Dynamic QR generation and payment confirmation.
+
+> 🌐 **Interactive Diagram Viewer**: Open [`docs/usecase-diagrams.html`](docs/usecase-diagrams.html) in any browser to inspect crisp vector SVG diagrams and switch seamlessly between English and Vietnamese.
+> 📄 **Detailed Specifications**: See [`docs/usecase-diagram-en.md`](docs/usecase-diagram-en.md) (English) and [`docs/usecase-diagram.md`](docs/usecase-diagram.md) (Vietnamese).
+
+---
+
+### 4.1. System Context Overview
+
+High-level architecture capturing interactions between the 4 primary actors and the core subsystem boundaries:
+
+![System Context Overview](docs/usecase-overview.png)
+
+---
+
+### 4.2. Server Use Case Diagram (Front-of-House Waitstaff)
+
+Handles dining room floor management, guest reception, and table-side order taking:
+
+![Server Use Case Diagram](docs/usecase-server.png)
+
+* **Key Scopes**:
+  * `UC-SRV-01`: View Floor Plan & Table Status (Visual color cues: Vacant / Occupied / Reserved).
+  * `UC-SRV-02`: Open Table & Assign Guests (Activates dining session, generates Order ID).
+  * `UC-SRV-03` & `UC-SRV-04`: Search Catalog, select dishes, and attach custom dietary cooking requests (*e.g., less spicy, no onion*).
+  * `UC-SRV-05`: Dispatch Order to Kitchen (`<<include>>` item selection).
+  * `UC-SRV-06`: Place subsequent Add-on Order batches without disrupting active cooking items.
+  * `UC-SRV-07`: Request item cancellation (subject to manager approval).
+
+---
+
+### 4.3. Kitchen / Bar Staff Use Case Diagram (KDS Flow)
+
+Operates on touch-enabled Kitchen Display Systems (KDS) for chronological culinary preparation:
+
+![Kitchen Use Case Diagram](docs/usecase-kitchen.png)
+
+* **Key Scopes**:
+  * `UC-KIT-01`: View incoming tickets in strict First-In-First-Out (FIFO) chronological order.
+  * `UC-KIT-02`: Filter active tickets by station specialization (Hot Kitchen / Cold Salad / Bar).
+  * `UC-KIT-03`: Claim item preparation stage (`QUEUED` $\to$ `COOKING`).
+  * `UC-KIT-04`: Mark finished dishes as ready (`COOKING` $\to$ `READY`) to notify service runners.
+  * `UC-KIT-05`: Instant 86 (Out-of-Stock) alert switch to freeze depleted items across all POS terminals.
+
+---
+
+### 4.4. Cashier Staff Use Case Diagram (Billing & Settlement)
+
+Manages pre-bill issue, discount validation, fiscal calculation, and table release:
+
+![Cashier Use Case Diagram](docs/usecase-cashier.png)
+
+* **Key Scopes**:
+  * `UC-CSH-01`: View all active tables currently pending bill settlement.
+  * `UC-CSH-02`: Issue 80mm thermal pre-bills for tableside guest verification.
+  * `UC-CSH-03`: Apply promotional discount vouchers and VIP loyalty point redemption (`<<extend>>`).
+  * `UC-CSH-04`: Process multi-channel payment (Cash with change calculator, dynamic VietQR, Card POS).
+  * `UC-CSH-05`: Automated fiscal calculation (`<<include>>` 5% service fee + 8% VAT).
+  * `UC-CSH-06`: Close transaction, issue official VAT invoice, and release table to `VACANT`.
+
+---
+
+### 4.5. Restaurant Manager / Admin Use Case Diagram (Back Office)
+
+Provides centralized governance over menu engineering, loss-prevention controls, and business performance:
+
+![Manager Use Case Diagram](docs/usecase-manager.png)
+
+* **Key Scopes**:
+  * `UC-MGR-01`: Menu catalog hierarchy maintenance (Categories, Dish CRUD, High-res images).
+  * `UC-MGR-02`: Configure retail prices, estimated cost prices, and VAT rates.
+  * `UC-MGR-03`: Review and approve/reject item cancellation requests initiated from floor staff.
+  * `UC-MGR-04`: Real-time Gross Margin monitoring (`(Retail Price - Cost Price) / Retail Price`).
+  * `UC-MGR-05`: Review shift revenues, payment channel breakdowns, and top-selling items.
+
+---
+
+## 5. Database Architecture & Detailed ERD
 
 The database schema is engineered directly around the **3 Selected Core Features** with enterprise-grade data integrity:
 
@@ -209,7 +294,7 @@ erDiagram
 
 ---
 
-## 5. Interactive Frontend Prototype
+## 6. Interactive Frontend Prototype
 
 The system includes a fully functional interactive prototype in [`frontend/`](frontend/):
 

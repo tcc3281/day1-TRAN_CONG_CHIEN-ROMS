@@ -1,7 +1,7 @@
 # Sơ Đồ Thực Thể Quan Hệ Cơ Sở Dữ Liệu (Database ERD)
 **Hệ Thống Quản Lý Vận Hành Nhà Hàng (Gia Vị Việt POS & Back Office)**
 
-Tài liệu này thể hiện cấu trúc lược đồ Cơ sở dữ liệu và quan hệ giữa các bảng (Entities) được phân tích từ sơ đồ nghiệp vụ [`docs/top-down-approach-mindmap.png`](top-down-approach-mindmap.png) và tệp định nghĩa DBML [`docs/schema.dbml`](schema.dbml).
+Tài liệu này thể hiện cấu trúc lược đồ Cơ sở dữ liệu và quan hệ giữa các bảng (Entities) được phân tích từ sơ đồ nghiệp vụ [`docs/assets/requirements/top-down-approach-mindmap.png`](../assets/requirements/top-down-approach-mindmap.png) và tệp định nghĩa DBML [`schema.dbml`](schema.dbml).
 
 ---
 

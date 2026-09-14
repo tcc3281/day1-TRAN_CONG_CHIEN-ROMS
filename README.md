@@ -2,14 +2,13 @@
 
 ## 1. Problem Statement & Objective
 
-![Top-Down Approach Mindmap](docs/top-down-approach-mindmap.png)
+![Top-Down Approach Mindmap](docs/assets/requirements/top-down-approach-mindmap.png)
 
 ---
 
 ## 2. Feature Breakdown
 
-Decomposed from the architecture mindmap (`docs/top-down-approach-mindmap.png`), the system comprises 5 functional modules:
-
+Decomposed from the architecture mindmap (`docs/assets/requirements/top-down-approach-mindmap.png`), the system comprises 5 functional modules:
 ```
                           ┌─ 1. Table & Reservation Management
                           ├─ 2. Order Management (POS)
@@ -63,7 +62,7 @@ Derived from the functional breakdown, the system defines 4 internal user roles 
 * **👔 Restaurant Manager / Admin**: Catalog maintenance, pricing/gross margin control, cancellation approval.
 * **🏦 VietQR / Bank Gateway**: Dynamic QR generation and payment confirmation.
 
-> 📄 **Detailed Specifications**: See [`docs/usecase-auth-specification.md`](docs/usecase-auth-specification.md) and interactive diagrams in [`docs/usecase-diagrams.html`](docs/usecase-diagrams.html).
+> 📄 **Detailed Specifications**: See [`docs/01-requirements/usecase-auth-specification.md`](docs/01-requirements/usecase-auth-specification.md) and interactive diagrams in [`docs/01-requirements/usecase-diagrams.html`](docs/01-requirements/usecase-diagrams.html).
 
 ---
 
@@ -71,7 +70,7 @@ Derived from the functional breakdown, the system defines 4 internal user roles 
 
 High-level architecture capturing interactions between the 4 primary actors and the core subsystem boundaries:
 
-![System Context Overview](docs/usecase-overview.png)
+![System Context Overview](docs/assets/requirements/usecase-overview.png)
 
 ---
 
@@ -79,7 +78,7 @@ High-level architecture capturing interactions between the 4 primary actors and 
 
 Handles dining room floor management, guest reception, and table-side order taking:
 
-![Server Use Case Diagram](docs/usecase-server.png)
+![Server Use Case Diagram](docs/assets/requirements/usecase-server.png)
 
 * **Key Scopes**:
   * `UC-SRV-01`: View Floor Plan & Table Status (Visual color cues: Vacant / Occupied / Reserved).
@@ -95,7 +94,7 @@ Handles dining room floor management, guest reception, and table-side order taki
 
 Operates on touch-enabled Kitchen Display Systems (KDS) for chronological culinary preparation:
 
-![Kitchen Use Case Diagram](docs/usecase-kitchen.png)
+![Kitchen Use Case Diagram](docs/assets/requirements/usecase-kitchen.png)
 
 * **Key Scopes**:
   * `UC-KIT-01`: View incoming tickets in strict First-In-First-Out (FIFO) chronological order.
@@ -110,7 +109,7 @@ Operates on touch-enabled Kitchen Display Systems (KDS) for chronological culina
 
 Manages pre-bill issue, discount validation, fiscal calculation, and table release:
 
-![Cashier Use Case Diagram](docs/usecase-cashier.png)
+![Cashier Use Case Diagram](docs/assets/requirements/usecase-cashier.png)
 
 * **Key Scopes**:
   * `UC-CSH-01`: View all active tables currently pending bill settlement.
@@ -126,7 +125,7 @@ Manages pre-bill issue, discount validation, fiscal calculation, and table relea
 
 Provides centralized governance over menu engineering, loss-prevention controls, and business performance:
 
-![Manager Use Case Diagram](docs/usecase-manager.png)
+![Manager Use Case Diagram](docs/assets/requirements/usecase-manager.png)
 
 * **Key Scopes**:
   * `UC-MGR-01`: Menu catalog hierarchy maintenance (Categories, Dish CRUD, High-res images).
@@ -145,11 +144,11 @@ Bridging use case specifications to UI prototyping, the system architecture esta
 * **Ergonomic Spatial Layout**: Designed for rapid touch input, clear visual hierarchy, and instant operational feedback.
 * **Standardized Nomenclature**: Unifying action labels (`Gửi Bếp`, `In Tạm Tính`, `Chốt Đơn & Thanh Toán`) and entity lifecycle states.
 
-> 📄 **Complete IA Specification**: For detailed decision task flows (If/Else flowcharts), complete wireframe annotations, and metadata taxonomy dictionaries, see [`docs/information-architecture.md`](docs/information-architecture.md).
+> 📄 **Complete IA Specification**: For detailed decision task flows (If/Else flowcharts), complete wireframe annotations, and metadata taxonomy dictionaries, see [`docs/04-ui-ux/information-architecture.md`](docs/04-ui-ux/information-architecture.md).
 
 ### 5.1. Screen Hierarchy & Sitemap Mindmap
 
-![Information Architecture Sitemap Mindmap](docs/ia-sitemap-mindmap.png)
+![Information Architecture Sitemap Mindmap](docs/assets/wireframes/ia-sitemap-mindmap.png)
 
 ### 5.2. Operational Decision Task Flows (Mermaid Workflows)
 
@@ -242,25 +241,25 @@ flowchart TD
 
 #### A. Table-Side POS Ordering View
 
-![Wireframe POS Ordering](docs/wireframe-pos-ordering.png)
+![Wireframe POS Ordering](docs/assets/wireframes/wireframe-pos-ordering.png)
 
 * **Ergonomic Focus**: Top quick navigation tabs, centered 6-card dish catalog with fuzzy search/filter, and right-side cart with real-time bill preview & direct "Trans2 kitchen" / "Payment" triggers.
 
 #### B. Kitchen & Bar Display System (KDS)
 
-![Wireframe Kitchen KDS](docs/wireframe-kitchen-kds.png)
+![Wireframe Kitchen KDS](docs/assets/wireframes/wireframe-kitchen-kds.png)
 
 * **Ergonomic Focus**: Chronological FIFO table ticket queue (`Table A`, `Table B`), clear dish-item breakdown, and 1-tap `Completed` button to synchronize preparation status with floor staff.
 
 #### C. Cashier & Invoicing View
 
-![Wireframe Cashier Billing](docs/wireframe-cashier-billing.png)
+![Wireframe Cashier Billing](docs/assets/wireframes/wireframe-cashier-billing.png)
 
 * **Ergonomic Focus**: Top active table tabs, left bill breakdown (dishes, voucher, subtotal, VAT), and right customer loyalty info with dynamic multi-method settlement (Cash, VietQR, Card).
 
 #### D. Admin & Margin Governance View
 
-![Wireframe Admin Menu](docs/wireframe-admin-menu.png)
+![Wireframe Admin Menu](docs/assets/wireframes/wireframe-admin-menu.png)
 
 * **Ergonomic Focus**: Top KPI summary cards (Gross Margin %, shift revenue, active dishes) over the central menu catalog datatable with cost/price tracking and instant stock status toggling.
 
@@ -418,7 +417,7 @@ erDiagram
     }
 ```
 
-> 📄 **Schema Details**: For raw DBML definitions and documentation, see [`docs/schema.dbml`](docs/schema.dbml) and [`docs/database-erd.md`](docs/database-erd.md).
+> 📄 **Schema Details**: For raw DBML definitions and documentation, see [`docs/03-database/schema.dbml`](docs/03-database/schema.dbml) and [`docs/03-database/database-erd.md`](docs/03-database/database-erd.md).
 
 ---
 
@@ -437,7 +436,7 @@ The system includes a fully functional interactive prototype in [`frontend/`](fr
 
 Fast catalog search, category filtering, table cart with dietary notes, and instant out-of-stock indicators:
 
-![UI POS Ordering](docs/ui-pos-ordering.png)
+![UI POS Ordering](docs/assets/ui/ui-pos-ordering.png)
 
 ---
 
@@ -445,7 +444,7 @@ Fast catalog search, category filtering, table cart with dietary notes, and inst
 
 Dark-mode ergonomic interface with real-time FIFO ticket queue, station filtering (Hot/Cold/Bar), cooking stage progression (`QUEUED` $\to$ `COOKING` $\to$ `READY`), and instant out-of-stock alert switch:
 
-![UI Kitchen KDS](docs/ui-kitchen-kds.png)
+![UI Kitchen KDS](docs/assets/ui/ui-kitchen-kds.png)
 
 ---
 
@@ -453,7 +452,7 @@ Dark-mode ergonomic interface with real-time FIFO ticket queue, station filterin
 
 Split-screen reconciliation with active table switcher, pre-bill thermal receipt preview, VIP customer loyalty discount, and multi-method payment (Cash change calculator, dynamic VietQR):
 
-![UI Cashier Billing](docs/ui-cashier-billing.png)
+![UI Cashier Billing](docs/assets/ui/ui-cashier-billing.png)
 
 ---
 
@@ -461,7 +460,7 @@ Split-screen reconciliation with active table switcher, pre-bill thermal receipt
 
 Centralized back-office dashboard displaying key financial metrics (Gross Margin %, shift revenue), catalog CRUD operations, and live stock synchronization across POS terminals:
 
-![UI Admin Menu](docs/ui-admin-menu.png)
+![UI Admin Menu](docs/assets/ui/ui-admin-menu.png)
 
 ---
 
@@ -474,16 +473,16 @@ The system architecture is engineered using the **C4 Model (Simon Brown)**, brid
 * **Level 3 - Components**: Decomposes the `.NET 8 Backend Web API` into 6 core cohesive components (`Tables`, `Orders`, `Invoices`, `Dishes`, `SignalR Hub`, `AppDbContext`).
 
 <div align="center" style="background-color: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 20px 0;">
-  <img src="docs/C1.png" alt="C4 Level 1: System Context Diagram" style="max-width: 95%; height: auto;" />
+  <img src="docs/assets/architecture/C1.png" alt="C4 Level 1: System Context Diagram" style="max-width: 95%; height: auto;" />
   <p style="margin-top: 10px; font-size: 13px; font-weight: 600; color: #475569; font-family: monospace;">Figure 8.1: C4 Level 1 - System Context Diagram</p>
 </div>
 
 <div align="center" style="background-color: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 20px 0;">
-  <img src="docs/C2.png" alt="C4 Level 2: Container Diagram" style="max-width: 95%; height: auto;" />
+  <img src="docs/assets/architecture/C2.png" alt="C4 Level 2: Container Diagram" style="max-width: 95%; height: auto;" />
   <p style="margin-top: 10px; font-size: 13px; font-weight: 600; color: #475569; font-family: monospace;">Figure 8.2: C4 Level 2 - Container Diagram</p>
 </div>
 
 > 📄 **Technical Architecture Documentation**:
 >
-> * 📐 **C4 Architecture Specification (Levels 1, 2, 3)**: [`docs/c4-architecture.md`](docs/c4-architecture.md)
-> * 🔄 **Dynamic Behavior, State Machines & Sequence Flows**: [`docs/behavioral-architecture.md`](docs/behavioral-architecture.md)
+> * 📐 **C4 Architecture Specification (Levels 1, 2, 3)**: [`docs/02-architecture/c4-architecture.md`](docs/02-architecture/c4-architecture.md)
+> * 🔄 **Dynamic Behavior, State Machines & Sequence Flows**: [`docs/02-architecture/behavioral-architecture.md`](docs/02-architecture/behavioral-architecture.md)

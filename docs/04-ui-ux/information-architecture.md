@@ -10,7 +10,7 @@ Tài liệu này là bản vẽ kỹ thuật toàn diện về **Kiến trúc Th
 
 Sơ đồ cây thể hiện toàn bộ các màn hình, các khung popup (Modals) và phân nhóm chức năng của ứng dụng:
 
-![Information Architecture Sitemap Mindmap](ia-sitemap-mindmap.png)
+![Information Architecture Sitemap Mindmap](../assets/wireframes/ia-sitemap-mindmap.png)
 
 ---
 
@@ -111,7 +111,7 @@ Phân bổ diện tích giao diện 2 chiều theo chuẩn công thái học tha
 
 ### 3.1. Wireframe Màn Hình POS Gọi Món (Table-Side POS Ordering)
 
-![Wireframe POS Ordering View](wireframe-pos-ordering.png)
+![Wireframe POS Ordering View](../assets/wireframes/wireframe-pos-ordering.png)
 
 * **Bố cục không gian**:
   * **Header**: Thanh chuyển tab điều hướng nhanh (`Switch tab`) và thương hiệu quán (`Logo`).
@@ -122,7 +122,7 @@ Phân bổ diện tích giao diện 2 chiều theo chuẩn công thái học tha
 
 ### 3.2. Wireframe Màn Hình Bếp & Bar KDS (Kitchen Display System)
 
-![Wireframe Kitchen KDS View](wireframe-kitchen-kds.png)
+![Wireframe Kitchen KDS View](../assets/wireframes/wireframe-kitchen-kds.png)
 
 * **Bố cục không gian**:
   * **Hàng đợi vé theo bàn**: Trực quan hóa các phiếu yêu cầu chế biến theo từng bàn ăn (`Table A`, `Table B`...).
@@ -133,7 +133,7 @@ Phân bổ diện tích giao diện 2 chiều theo chuẩn công thái học tha
 
 ### 3.3. Wireframe Màn Hình Thu Ngân & Thanh Toán (Cashier & Invoicing)
 
-![Wireframe Cashier Billing View](wireframe-cashier-billing.png)
+![Wireframe Cashier Billing View](../assets/wireframes/wireframe-cashier-billing.png)
 
 * **Bố cục không gian**:
   * **Thanh chọn bàn**: Liệt kê trực quan các bàn đang chờ thanh toán (`Table A`, `Table B`...).
@@ -144,7 +144,7 @@ Phân bổ diện tích giao diện 2 chiều theo chuẩn công thái học tha
 
 ### 3.4. Wireframe Màn Hình Quản Trị Thực Đơn & Doanh Thu (Admin Dashboard)
 
-![Wireframe Admin Menu View](wireframe-admin-menu.png)
+![Wireframe Admin Menu View](../assets/wireframes/wireframe-admin-menu.png)
 
 * **Bố cục không gian**:
   * **Khu vực tổng quan (Overview Info)**: Khối KPI thể hiện số lượng món đang bán, tổng doanh thu ca và tỷ suất Gross Margin trung bình.
@@ -218,17 +218,17 @@ Quy định thống nhất 100% về từ ngữ trên giao diện để tránh v
 ```
 Bước 1: Top-Down Problem Statement & Lựa chọn 80/20 (README.md)
    │
-Bước 2: Phân tích Roles & Sơ đồ Use Case (docs/usecase-diagram.md)
+Bước 2: Phân tích Roles & Sơ đồ Use Case (docs/01-requirements/usecase-auth-specification.md)
    │
-Bước 3: Information Architecture - IA (Tài liệu này: docs/information-architecture.md)
+Bước 3: Information Architecture - IA (Tài liệu này: docs/04-ui-ux/information-architecture.md)
    │
 Bước 4: Mockup & Interactive Prototype (frontend/index.html)
    │
-Bước 5: Database Architecture (DBML & ERD: docs/schema.dbml & docs/database-erd.md)
+Bước 5: Database Architecture (DBML & ERD: docs/03-database/schema.dbml & docs/03-database/database-erd.md)
 ```
 
 > 📄 **Tài liệu tham khảo liên quan**:
 >
-> * Sơ đồ Use Case Diagram: [`docs/usecase-diagram.md`](usecase-diagram.md) & [`docs/usecase-diagram-en.md`](usecase-diagram-en.md)
-> * Cơ sở dữ liệu ERD: [`docs/database-erd.md`](database-erd.md) & [`docs/schema.dbml`](schema.dbml)
-> * Nguyên mẫu giao diện thực tế: [`frontend/index.html`](../frontend/index.html)
+> * Sơ đồ Use Case Specification: [`docs/01-requirements/usecase-auth-specification.md`](../01-requirements/usecase-auth-specification.md)
+> * Cơ sở dữ liệu ERD: [`docs/03-database/database-erd.md`](../03-database/database-erd.md) & [`docs/03-database/schema.dbml`](../03-database/schema.dbml)
+> * Nguyên mẫu giao diện thực tế: [`frontend/index.html`](../../frontend/index.html)

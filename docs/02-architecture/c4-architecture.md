@@ -13,7 +13,7 @@
 Cấp độ 1 thể hiện ranh giới hệ thống **ROMS Core System** ở trung tâm như một hộp đen, các tác nhân nhân sự vận hành (`Wait Staff`, `Kitchen Staff`, `Cashier`, `Manager`) và 2 hệ thống vệ tinh bên ngoài (`Printer`, `Banking Gateway`).
 
 <div align="center" style="background-color: #ffffff; padding: 28px; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); margin: 20px 0;">
-  <img src="C1.png" alt="C4 Level 1: System Context Diagram - ROMS" style="max-width: 100%; height: auto; display: block; margin: 0 auto;" />
+  <img src="../assets/architecture/C1.png" alt="C4 Level 1: System Context Diagram - ROMS" style="max-width: 100%; height: auto; display: block; margin: 0 auto;" />
   <p style="margin-top: 14px; font-size: 13px; font-weight: 600; color: #475569; font-family: monospace;">Sơ đồ 1: C4 Level 1 - System Context Diagram</p>
 </div>
 
@@ -40,7 +40,7 @@ Cấp độ 2 "mở nắp" ranh giới ROMS Core System để bóc tách các �
 * Hệ thống phân luồng qua **API Gateway**, xử lý nghiệp vụ bởi **Backend Web API**, đẩy vé Real-time qua **SignalR Hub**, lưu trữ phân tách giữa **PostgreSQL Database** và **Media Storage**.
 
 <div align="center" style="background-color: #ffffff; padding: 28px; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); margin: 20px 0;">
-  <img src="C2.png" alt="C4 Level 2: Container Diagram - ROMS" style="max-width: 100%; height: auto; display: block; margin: 0 auto;" />
+  <img src="../assets/architecture/C2.png" alt="C4 Level 2: Container Diagram - ROMS" style="max-width: 100%; height: auto; display: block; margin: 0 auto;" />
   <p style="margin-top: 14px; font-size: 13px; font-weight: 600; color: #475569; font-family: monospace;">Sơ đồ 2: C4 Level 2 - Container Diagram</p>
 </div>
 

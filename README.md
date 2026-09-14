@@ -18,13 +18,13 @@ Restaurant Operations ────┼─ 3. Kitchen Coordination (KDS)
                           └─ 5. Billing & Invoicing
 ```
 
-| Module                                  | Core Scope                                                                                  |      Note      |
-| :-------------------------------------- | :------------------------------------------------------------------------------------------ | :------------: |
-| **1. Table & Reservation**        | Visual floor plan, table statuses, seating coordination, advance reservations               |                |
-| **2. Order Taking (POS)**         | Fast dish catalog search, live cart, dietary notes, add-on order batches                    | **Core** |
+| Module                                  | Core Scope                                                                                                      |      Note      |
+| :-------------------------------------- | :-------------------------------------------------------------------------------------------------------------- | :------------: |
+| **1. Table & Reservation**        | Visual floor plan, table statuses, seating coordination, advance reservations                                   |                |
+| **2. Order Taking (POS)**         | Fast dish catalog search, live cart, dietary notes, add-on order batches                                        | **Core** |
 | **3. Kitchen Coordination (KDS)** | Chronological FIFO tickets, station routing (Hot/Cold/Bar), cooking stages, out-of-stock alert (báo hết món) |                |
-| **4. Menu Management**            | Catalog hierarchy, pricing, VAT, cost margin, instant stock availability toggle             | **Core** |
-| **5. Billing & Invoicing**        | Pre-bill calculation, vouchers, VIP points, multi-channel payment (Cash/VietQR/Card/Wallet) | **Core** |
+| **4. Menu Management**            | Catalog hierarchy, pricing, VAT, cost margin, instant stock availability toggle                                 | **Core** |
+| **5. Billing & Invoicing**        | Pre-bill calculation, vouchers, VIP points, multi-channel payment (Cash/VietQR/Card/Wallet)                     | **Core** |
 
 ---
 
@@ -63,7 +63,7 @@ Derived from the functional breakdown, the system defines 4 internal user roles 
 * **👔 Restaurant Manager / Admin**: Catalog maintenance, pricing/gross margin control, cancellation approval.
 * **🏦 VietQR / Bank Gateway**: Dynamic QR generation and payment confirmation.
 
-> 📄 **Detailed Specifications**: See [`docs/usecase-diagram-en.md`](docs/usecase-diagram-en.md) (English) and [`docs/usecase-diagram.md`](docs/usecase-diagram.md) (Vietnamese).
+> 📄 **Detailed Specifications**: See [`docs/usecase-auth-specification.md`](docs/usecase-auth-specification.md) and interactive diagrams in [`docs/usecase-diagrams.html`](docs/usecase-diagrams.html).
 
 ---
 
@@ -156,6 +156,7 @@ Bridging use case specifications to UI prototyping, the system architecture esta
 Standardized decision-tree workflows (`If/Else` branching) to prevent operational dead-ends and enforce validation across floor, kitchen, and checkout:
 
 #### 5.2.1. Table Seating & Guest Check-In Flow
+
 ```mermaid
 flowchart TD
     START([Start: Guest Arrives]) --> CLICK_TABLE[Server taps Table on Floor Plan]
@@ -177,6 +178,7 @@ flowchart TD
 ```
 
 #### 5.2.2. POS Ordering, Stock Validation & Kitchen Dispatch Flow
+
 ```mermaid
 flowchart TD
     START2([Server selects items for table]) --> SEARCH_DISH[Search SKU/Name or tap Dish Card]
@@ -201,6 +203,7 @@ flowchart TD
 ```
 
 #### 5.2.3. Cashier Billing, Multi-Payment & Table Release Flow
+
 ```mermaid
 flowchart TD
     START3([Guest requests bill]) --> CASHIER_SELECT[Cashier selects target Table]
@@ -238,19 +241,27 @@ flowchart TD
 ### 5.3. Core View Wireframes
 
 #### A. Table-Side POS Ordering View
+
 ![Wireframe POS Ordering](docs/wireframe-pos-ordering.png)
+
 * **Ergonomic Focus**: Top quick navigation tabs, centered 6-card dish catalog with fuzzy search/filter, and right-side cart with real-time bill preview & direct "Trans2 kitchen" / "Payment" triggers.
 
 #### B. Kitchen & Bar Display System (KDS)
+
 ![Wireframe Kitchen KDS](docs/wireframe-kitchen-kds.png)
+
 * **Ergonomic Focus**: Chronological FIFO table ticket queue (`Table A`, `Table B`), clear dish-item breakdown, and 1-tap `Completed` button to synchronize preparation status with floor staff.
 
 #### C. Cashier & Invoicing View
+
 ![Wireframe Cashier Billing](docs/wireframe-cashier-billing.png)
+
 * **Ergonomic Focus**: Top active table tabs, left bill breakdown (dishes, voucher, subtotal, VAT), and right customer loyalty info with dynamic multi-method settlement (Cash, VietQR, Card).
 
 #### D. Admin & Margin Governance View
+
 ![Wireframe Admin Menu](docs/wireframe-admin-menu.png)
+
 * **Ergonomic Focus**: Top KPI summary cards (Gross Margin %, shift revenue, active dishes) over the central menu catalog datatable with cost/price tracking and instant stock status toggling.
 
 ---
@@ -451,3 +462,28 @@ Split-screen reconciliation with active table switcher, pre-bill thermal receipt
 Centralized back-office dashboard displaying key financial metrics (Gross Margin %, shift revenue), catalog CRUD operations, and live stock synchronization across POS terminals:
 
 ![UI Admin Menu](docs/ui-admin-menu.png)
+
+---
+
+## 8. Software Architecture (C4 Model) & System Dynamics
+
+The system architecture is engineered using the **C4 Model (Simon Brown)**, bridging static structural boundaries to dynamic behavioral execution across physical restaurant devices:
+
+* **Level 1 - System Context**: Global boundary of ROMS Core System, 4 operational staff roles, and external satellite systems (VietQR Banking Gateway, 80mm ESC/POS Thermal Printer).
+* **Level 2 - Containers**: Separates runtime boundaries across physical devices: **Waitstaff Mobile App** (handheld smartphones), **Staff Web App** (fullscreen kitchen KDS, desktop cashier POS, back-office admin), **API Gateway (Nginx)**, **Backend Web API (.NET 8)**, **SignalR Realtime Hub**, **PostgreSQL DB**, and **Media Storage**.
+* **Level 3 - Components**: Decomposes the `.NET 8 Backend Web API` into 6 core cohesive components (`Tables`, `Orders`, `Invoices`, `Dishes`, `SignalR Hub`, `AppDbContext`).
+
+<div align="center" style="background-color: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 20px 0;">
+  <img src="docs/C1.png" alt="C4 Level 1: System Context Diagram" style="max-width: 95%; height: auto;" />
+  <p style="margin-top: 10px; font-size: 13px; font-weight: 600; color: #475569; font-family: monospace;">Figure 8.1: C4 Level 1 - System Context Diagram</p>
+</div>
+
+<div align="center" style="background-color: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 20px 0;">
+  <img src="docs/C2.png" alt="C4 Level 2: Container Diagram" style="max-width: 95%; height: auto;" />
+  <p style="margin-top: 10px; font-size: 13px; font-weight: 600; color: #475569; font-family: monospace;">Figure 8.2: C4 Level 2 - Container Diagram</p>
+</div>
+
+> 📄 **Technical Architecture Documentation**:
+>
+> * 📐 **C4 Architecture Specification (Levels 1, 2, 3)**: [`docs/c4-architecture.md`](docs/c4-architecture.md)
+> * 🔄 **Dynamic Behavior, State Machines & Sequence Flows**: [`docs/behavioral-architecture.md`](docs/behavioral-architecture.md)

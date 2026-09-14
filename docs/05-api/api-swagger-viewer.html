@@ -1,0 +1,2512 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROMS API Specification & Contract - Gia Vị Việt</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f8fafc;
+    }
+    .swagger-ui .topbar { display: none; }
+    .swagger-ui .info { margin: 20px 0; }
+    .swagger-ui .scheme-container { background: #ffffff; padding: 15px 0; box-shadow: none; border-bottom: 1px solid #e2e8f0; }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800">
+  <!-- Header Bar -->
+  <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-white text-lg shadow">
+          🍜
+        </div>
+        <div>
+          <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-2">
+            ROMS API Contract
+            <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs px-2 py-0.5 rounded font-mono font-medium">OpenAPI 3.0</span>
+          </h1>
+          <p class="text-xs text-slate-400">Restaurant Operations Management System</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3 text-xs font-medium">
+        <a href="realtime-signalr.md" class="px-3 py-1.5 rounded-md bg-slate-800 text-cyan-400 border border-cyan-500/30 hover:bg-slate-700 transition flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          SignalR Realtime Contract
+        </a>
+        <a href="openapi.yaml" download class="px-3 py-1.5 rounded-md bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 transition">
+          YAML Spec
+        </a>
+        <a href="openapi.json" download class="px-3 py-1.5 rounded-md bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 transition">
+          JSON Spec
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notice Banner -->
+  <div class="bg-amber-50 border-b border-amber-200 px-4 py-3 text-xs text-amber-900">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold uppercase tracking-wider bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded text-[10px]">Architecture Note</span>
+        <span>Đặc tả API Contract theo chuẩn OpenAPI 3.0 ánh xạ 1:1 từ <strong>C4 Component Diagram</strong> và <strong>14 Sequence Diagrams</strong>.</span>
+      </div>
+      <div class="text-slate-500 font-mono">Updated: 2026-09-14</div>
+    </div>
+  </div>
+
+  <!-- Swagger UI Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div id="swagger-ui" class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6"></div>
+  </main>
+
+  <script id="api-spec" type="application/json">{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Restaurant Operations Management System (ROMS) API",
+    "description": "Enterprise RESTful API Specification for Restaurant Operations Management System (Gia Vị Việt F&B).\n\n### Architecture Standards:\n- **Base Protocol**: HTTPS + RESTful JSON\n- **Authentication**: Dual-Strategy (Manager JWT Bearer + Waitstaff Quick PIN Session)\n- **Data Integrity**: Price Snapshot Pattern for orders & Financial Immutability for Invoices\n- **Realtime Channel**: Bi-directional SignalR WebSocket Hub at `/hubs/restaurant`\n",
+    "version": "1.0.0",
+    "contact": {
+      "name": "ROMS Engineering Team",
+      "email": "dev@giaviviet.vn"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.giaviviet.vn/api/v1",
+      "description": "Production API Gateway (Nginx)"
+    },
+    {
+      "url": "http://localhost:5000/api/v1",
+      "description": "Local Development Server (.NET 8 Web API)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Identity management, Manager JWT issuance, and Waitstaff Fast PIN access"
+    },
+    {
+      "name": "Tables",
+      "description": "Dining room floor plan layout, session management, and table state machine"
+    },
+    {
+      "name": "Menu & Dishes",
+      "description": "Category catalog, dish CRUD, gross margin control, and 86 stock toggle"
+    },
+    {
+      "name": "Orders (POS)",
+      "description": "Table-side ordering, multi-round add-on batches, and line-item cooking notes"
+    },
+    {
+      "name": "Kitchen KDS",
+      "description": "FIFO ticket queue management, station routing, and cooking stage progression"
+    },
+    {
+      "name": "Billing & Invoicing",
+      "description": "Pre-bill calculation, voucher validation, VIP loyalty points, and fiscal invoice issuance"
+    },
+    {
+      "name": "Payments",
+      "description": "Multi-channel settlement (Cash change calculator, Dynamic VietQR, Bank Webhook)"
+    },
+    {
+      "name": "Analytics & Reporting",
+      "description": "Shift revenue consolidation and gross margin performance metrics"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Manager / Admin Login via Username and Password",
+        "description": "Issues JWT Access Token (15 mins) and long-lived Refresh Token for Back Office portal.",
+        "operationId": "loginManager",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthTokenResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/auth/pin": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Waitstaff Quick PIN Authentication",
+        "description": "Fast 4-6 digit numeric PIN authentication optimized for tablet floor service.",
+        "operationId": "authenticateStaffPin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinAuthRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PIN verified, session active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PinAuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Refresh Expired Access Token",
+        "operationId": "refreshToken",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "refreshToken"
+                ],
+                "properties": {
+                  "refreshToken": {
+                    "type": "string",
+                    "example": "def50200..."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "New token pair issued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthTokenResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/tables": {
+      "get": {
+        "tags": [
+          "Tables"
+        ],
+        "summary": "Get Live Floor Plan Tables",
+        "description": "Returns all dining tables with real-time status and active dining orders.",
+        "operationId": "getFloorTables",
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "StaffPinAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "zone",
+            "in": "query",
+            "description": "Filter tables by dining zone (e.g., Tầng 1, Sân vườn, VIP)",
+            "schema": {
+              "type": "string",
+              "example": "Tầng 1"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by table status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "VACANT",
+                "OCCUPIED",
+                "RESERVED",
+                "BILLING_PENDING",
+                "CLEANING"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of tables retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TableDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tables/{id}/open": {
+      "post": {
+        "tags": [
+          "Tables"
+        ],
+        "summary": "Open Dining Session for Table",
+        "description": "Transitions table from VACANT to OCCUPIED and initializes an active Order.",
+        "operationId": "openTableSession",
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "StaffPinAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenTableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Table session opened, Order initialized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Table is already occupied or reserved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tables/{id}/transfer": {
+      "post": {
+        "tags": [
+          "Tables"
+        ],
+        "summary": "Transfer Dining Session to Another Table",
+        "description": "Moves all active orders and items to a vacant destination table.",
+        "operationId": "transferTable",
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "StaffPinAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "targetTableId",
+                  "reason"
+                ],
+                "properties": {
+                  "targetTableId": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 5
+                  },
+                  "reason": {
+                    "type": "string",
+                    "example": "Khách xin chuyển vào khu máy lạnh"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Table transferred successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TableDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Target table is not vacant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/categories": {
+      "get": {
+        "tags": [
+          "Menu & Dishes"
+        ],
+        "summary": "Get Menu Categories Hierarchy",
+        "description": "Retrieves all active catalog categories ordered by display sequence.",
+        "operationId": "getCategories",
+        "responses": {
+          "200": {
+            "description": "List of categories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dishes": {
+      "get": {
+        "tags": [
+          "Menu & Dishes"
+        ],
+        "summary": "Get Dish Catalog with Search and Filters",
+        "description": "Retrieves dishes for POS menu grid or Admin catalog management.",
+        "operationId": "getDishes",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 1
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search term matching SKU or dish name",
+            "schema": {
+              "type": "string",
+              "example": "bò"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "AVAILABLE",
+                "OUT_OF_STOCK",
+                "DISCONTINUED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of dishes retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DishDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Menu & Dishes"
+        ],
+        "summary": "Create New Dish (Admin / Manager)",
+        "description": "Adds a new dish with cost margin metrics and VAT rate.",
+        "operationId": "createDish",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDishRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Dish created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DishDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          }
+        }
+      }
+    },
+    "/dishes/{id}": {
+      "put": {
+        "tags": [
+          "Menu & Dishes"
+        ],
+        "summary": "Update Dish Metadata & Pricing",
+        "operationId": "updateDish",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDishRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dish updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DishDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dishes/{id}/status": {
+      "patch": {
+        "tags": [
+          "Menu & Dishes"
+        ],
+        "summary": "Instant Stock Availability Toggle (Khóa món 86)",
+        "description": "Toggles dish availability between `AVAILABLE` and `OUT_OF_STOCK`.\nInstantly broadcasts a SignalR event `DishOutOfStockAlert` to all active POS tablets.\n",
+        "operationId": "toggleDishAvailability",
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "StaffPinAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 12
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "AVAILABLE",
+                      "OUT_OF_STOCK"
+                    ],
+                    "example": "OUT_OF_STOCK"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "example": "Hết bò Wagyu A5 trong kho đông"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status updated and broadcasted via SignalR",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DishDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dishes/upload-image": {
+      "post": {
+        "tags": [
+          "Menu & Dishes"
+        ],
+        "summary": "Upload Dish Image to Media Storage",
+        "operationId": "uploadDishImage",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Image stored, CDN URL returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "imageUrl": {
+                      "type": "string",
+                      "example": "https://media.giaviviet.vn/dishes/bo-fuji-nuong.webp"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "tags": [
+          "Orders (POS)"
+        ],
+        "summary": "Get Order Details by ID",
+        "description": "Retrieves complete order sheet, ordered items with cooking notes and statuses.",
+        "operationId": "getOrderById",
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "StaffPinAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 8821
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/items": {
+      "post": {
+        "tags": [
+          "Orders (POS)"
+        ],
+        "summary": "Dispatch Order Items to Kitchen (Gửi Bếp & Gọi Thêm Món)",
+        "description": "Dispatches a batch of dishes to Kitchen KDS.\n- Supports first-round ordering and subsequent add-on batches (`isAddon: true`).\n- Uses Price Snapshot Pattern to freeze `unit_price` at dispatch moment.\n- Triggers SignalR `ReceiveNewTicket` audio alert at target kitchen station.\n",
+        "operationId": "dispatchOrderItems",
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "StaffPinAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 8821
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DispatchOrderItemsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Items dispatched successfully to KDS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "One or more dishes are marked OUT_OF_STOCK (86)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/items/{itemId}": {
+      "delete": {
+        "tags": [
+          "Orders (POS)"
+        ],
+        "summary": "Request Item Cancellation / Void Dish",
+        "description": "- If item status is `QUEUED`: Automatically voids item.\n- If item status is `COOKING`: Rejects with 422 Unprocessable Entity, requiring Manager Approval.\n",
+        "operationId": "voidOrderItem",
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "StaffPinAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "cancelReason"
+                ],
+                "properties": {
+                  "cancelReason": {
+                    "type": "string",
+                    "example": "Khách đổi ý muốn gọi lẩu thay nướng"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item voided"
+          },
+          "422": {
+            "description": "Dish is already cooking, requires manager authorization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/items/{itemId}/approve-cancel": {
+      "post": {
+        "tags": [
+          "Orders (POS)"
+        ],
+        "summary": "Manager Approval for In-Cooking Item Cancellation",
+        "description": "Voids cooking item, marks reason, and logs ingredient waste into Kitchen Waste ledger.",
+        "operationId": "approveItemCancellation",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "managerPin",
+                  "logToWasteLedger"
+                ],
+                "properties": {
+                  "managerPin": {
+                    "type": "string",
+                    "example": "9988"
+                  },
+                  "logToWasteLedger": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "note": {
+                    "type": "string",
+                    "example": "Thịt bò đã cắt, chuyển sang kho nguyên liệu súp"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Void approved and logged to waste ledger"
+          }
+        }
+      }
+    },
+    "/kds/tickets": {
+      "get": {
+        "tags": [
+          "Kitchen KDS"
+        ],
+        "summary": "Get Chronological FIFO Kitchen Tickets",
+        "description": "Returns active tickets sorted strictly by FIFO elapsed time.",
+        "operationId": "getKdsTickets",
+        "parameters": [
+          {
+            "name": "station",
+            "in": "query",
+            "description": "Filter by culinary station (HOT, COLD, BAR)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "HOT",
+                "COLD",
+                "BAR",
+                "ALL"
+              ],
+              "default": "ALL"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "FIFO ticket queue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/KdsTicketDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kds/items/{itemId}/claim": {
+      "patch": {
+        "tags": [
+          "Kitchen KDS"
+        ],
+        "summary": "Chef Claims Item Preparation (`QUEUED` -> `COOKING`)",
+        "operationId": "claimKdsItem",
+        "parameters": [
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status updated to COOKING",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderItemDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kds/items/{itemId}/ready": {
+      "patch": {
+        "tags": [
+          "Kitchen KDS"
+        ],
+        "summary": "Chef Marks Dish Finished (`COOKING` -> `READY`)",
+        "description": "Triggers SignalR `DishReadyAlert` to floor waitstaff mobile tablets with audio chime.",
+        "operationId": "markKdsItemReady",
+        "parameters": [
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Item ready for runner pickup, broadcasted via SignalR",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderItemDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invoices/pre-bill/{orderId}": {
+      "get": {
+        "tags": [
+          "Billing & Invoicing"
+        ],
+        "summary": "Generate Pre-Bill Calculation Preview",
+        "description": "Calculates preliminary financial figures:\n- Subtotal of served items\n- Service charge (5%)\n- Value-Added Tax (VAT 8%)\n- Formats 80mm ESC/POS thermal receipt payload for guest review.\n",
+        "operationId": "getPreBillPreview",
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "StaffPinAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 8821
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pre-bill calculation breakdown",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreBillResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invoices/validate-voucher": {
+      "post": {
+        "tags": [
+          "Billing & Invoicing"
+        ],
+        "summary": "Validate Discount Coupon / Voucher Code",
+        "operationId": "validateVoucher",
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "StaffPinAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "voucherCode",
+                  "subtotal"
+                ],
+                "properties": {
+                  "voucherCode": {
+                    "type": "string",
+                    "example": "VIPGOLD10"
+                  },
+                  "subtotal": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 1250000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Voucher valid, discount calculated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoucherValidationResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Voucher not found or expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customers/lookup": {
+      "get": {
+        "tags": [
+          "Billing & Invoicing"
+        ],
+        "summary": "Lookup Customer Loyalty Account by Phone Number",
+        "operationId": "lookupCustomer",
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "StaffPinAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "phone",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0901234567"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer loyalty profile retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Customer not found"
+          }
+        }
+      }
+    },
+    "/invoices": {
+      "post": {
+        "tags": [
+          "Billing & Invoicing"
+        ],
+        "summary": "Finalize and Issue Invoice (Seal Financial Record)",
+        "description": "Creates an immutable financial INVOICE snapshot record.\nFormula: `final_total = subtotal - voucher_discount - points_discount + service_fee + vat_amount`\n",
+        "operationId": "createInvoice",
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "StaffPinAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvoiceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Immutable invoice created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          }
+        }
+      }
+    },
+    "/payments/cash": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Settle Payment via Cash with Change Calculator",
+        "description": "Verifies cash tendered, calculates change return, and releases table to VACANT.",
+        "operationId": "payWithCash",
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "StaffPinAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CashPaymentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cash payment recorded, change calculated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentReceiptDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tendered amount is less than total due",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/vietqr/generate": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Generate Dynamic VietQR Code",
+        "description": "Generates an EMVCo-compliant VietQR with embedded invoice amount and unique transfer reference.",
+        "operationId": "generateVietQr",
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "StaffPinAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "invoiceId"
+                ],
+                "properties": {
+                  "invoiceId": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 1042
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dynamic VietQR generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VietQrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/vietqr/callback": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Banking Gateway Webhook Callback",
+        "description": "External banking webhook confirming incoming transfer matching transaction reference.",
+        "operationId": "handleBankWebhook",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BankWebhookPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment confirmed and table released to VACANT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Payment reconciled and table released."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics/shift-summary": {
+      "get": {
+        "tags": [
+          "Analytics & Reporting"
+        ],
+        "summary": "Query Shift Revenue & Gross Margin Analytics",
+        "description": "Computes total net sales, payment method distribution, and average gross margin percentage.",
+        "operationId": "getShiftSummary",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-09-14"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shift revenue analytics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftSummaryDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Bearer token issued upon Manager/Admin login."
+      },
+      "StaffPinAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Staff-PIN",
+        "description": "Quick 4-6 digit numeric PIN code for Waitstaff and Cashier terminals."
+      }
+    },
+    "responses": {
+      "UnauthorizedError": {
+        "description": "Authentication credentials missing or invalid",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          }
+        }
+      },
+      "BadRequestError": {
+        "description": "Invalid request payload or validation constraint failed",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ApiError": {
+        "type": "object",
+        "required": [
+          "errorCode",
+          "message",
+          "timestamp"
+        ],
+        "properties": {
+          "errorCode": {
+            "type": "string",
+            "example": "OUT_OF_STOCK_ERROR"
+          },
+          "message": {
+            "type": "string",
+            "example": "Dish 'Bò Fuji Áp Chảo' is currently unavailable."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-14T14:30:00Z"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "admin"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "Admin@123456"
+          }
+        }
+      },
+      "AuthTokenResponse": {
+        "type": "object",
+        "required": [
+          "accessToken",
+          "tokenType",
+          "expiresIn",
+          "refreshToken",
+          "user"
+        ],
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsIn..."
+          },
+          "tokenType": {
+            "type": "string",
+            "example": "Bearer"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "example": 900
+          },
+          "refreshToken": {
+            "type": "string",
+            "example": "def502003c28..."
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserDto"
+          }
+        }
+      },
+      "PinAuthRequest": {
+        "type": "object",
+        "required": [
+          "pinCode"
+        ],
+        "properties": {
+          "pinCode": {
+            "type": "string",
+            "example": "1234"
+          }
+        }
+      },
+      "PinAuthResponse": {
+        "type": "object",
+        "required": [
+          "sessionToken",
+          "staff"
+        ],
+        "properties": {
+          "sessionToken": {
+            "type": "string",
+            "example": "pin-session-uuid-8821"
+          },
+          "staff": {
+            "$ref": "#/components/schemas/UserDto"
+          }
+        }
+      },
+      "UserDto": {
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "fullName",
+          "role"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "username": {
+            "type": "string",
+            "example": "chientran"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Trần Công Chiến"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "MANAGER",
+              "CASHIER",
+              "SERVER",
+              "KITCHEN"
+            ],
+            "example": "SERVER"
+          }
+        }
+      },
+      "TableDto": {
+        "type": "object",
+        "required": [
+          "id",
+          "tableNumber",
+          "zone",
+          "capacity",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 3
+          },
+          "tableNumber": {
+            "type": "string",
+            "example": "Bàn 03"
+          },
+          "zone": {
+            "type": "string",
+            "example": "Tầng 1"
+          },
+          "capacity": {
+            "type": "integer",
+            "example": 4
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "VACANT",
+              "OCCUPIED",
+              "RESERVED",
+              "BILLING_PENDING",
+              "CLEANING"
+            ],
+            "example": "OCCUPIED"
+          },
+          "currentOrderId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "example": 8821
+          },
+          "orderCode": {
+            "type": "string",
+            "nullable": true,
+            "example": "#ORD-8821"
+          },
+          "totalDue": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "example": 650000
+          }
+        }
+      },
+      "OpenTableRequest": {
+        "type": "object",
+        "required": [
+          "guestCount"
+        ],
+        "properties": {
+          "guestCount": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 4
+          },
+          "reservationId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        }
+      },
+      "CategoryDto": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "displayOrder",
+          "isActive"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Khai Vị"
+          },
+          "displayOrder": {
+            "type": "integer",
+            "example": 1
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "DishDto": {
+        "type": "object",
+        "required": [
+          "id",
+          "categoryId",
+          "sku",
+          "name",
+          "price",
+          "costPrice",
+          "grossMarginPercent",
+          "unit",
+          "status",
+          "vatRate"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 10
+          },
+          "categoryId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "sku": {
+            "type": "string",
+            "example": "BO-FUJI-01"
+          },
+          "name": {
+            "type": "string",
+            "example": "Bò Fuji Áp Chảo Sốt Tiêu"
+          },
+          "price": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Retail price in VND",
+            "example": 185000
+          },
+          "costPrice": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Estimated raw ingredient cost in VND",
+            "example": 74000
+          },
+          "grossMarginPercent": {
+            "type": "number",
+            "format": "float",
+            "description": "Computed as ((price - costPrice) / price) * 100",
+            "example": 60.0
+          },
+          "unit": {
+            "type": "string",
+            "example": "Phần"
+          },
+          "imageUrl": {
+            "type": "string",
+            "example": "https://media.giaviviet.vn/dishes/bo-fuji.webp"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "OUT_OF_STOCK",
+              "DISCONTINUED"
+            ],
+            "example": "AVAILABLE"
+          },
+          "isBestseller": {
+            "type": "boolean",
+            "example": true
+          },
+          "vatRate": {
+            "type": "integer",
+            "example": 8
+          }
+        }
+      },
+      "CreateDishRequest": {
+        "type": "object",
+        "required": [
+          "categoryId",
+          "sku",
+          "name",
+          "price",
+          "costPrice",
+          "unit",
+          "vatRate"
+        ],
+        "properties": {
+          "categoryId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 2
+          },
+          "sku": {
+            "type": "string",
+            "example": "LAU-NAM-02"
+          },
+          "name": {
+            "type": "string",
+            "example": "Lẩu Nấm Chim Câu Thượng Hạng"
+          },
+          "price": {
+            "type": "integer",
+            "format": "int64",
+            "example": 380000
+          },
+          "costPrice": {
+            "type": "integer",
+            "format": "int64",
+            "example": 152000
+          },
+          "unit": {
+            "type": "string",
+            "example": "Nồi"
+          },
+          "imageUrl": {
+            "type": "string",
+            "example": "https://media.giaviviet.vn/dishes/lau-nam.webp"
+          },
+          "vatRate": {
+            "type": "integer",
+            "default": 8,
+            "example": 8
+          }
+        }
+      },
+      "DispatchOrderItemsRequest": {
+        "type": "object",
+        "required": [
+          "isAddon",
+          "items"
+        ],
+        "properties": {
+          "isAddon": {
+            "type": "boolean",
+            "description": "Set true if this is a subsequent round of ordering",
+            "example": false
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItemInput"
+            }
+          }
+        }
+      },
+      "OrderItemInput": {
+        "type": "object",
+        "required": [
+          "dishId",
+          "quantity"
+        ],
+        "properties": {
+          "dishId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 10
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 2
+          },
+          "cookingNote": {
+            "type": "string",
+            "example": "Ít cay, sốt tiêu đen để riêng"
+          }
+        }
+      },
+      "OrderItemDto": {
+        "type": "object",
+        "required": [
+          "id",
+          "dishId",
+          "dishName",
+          "quantity",
+          "unitPrice",
+          "subtotal",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 101
+          },
+          "dishId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 10
+          },
+          "dishName": {
+            "type": "string",
+            "example": "Bò Fuji Áp Chảo Sốt Tiêu"
+          },
+          "quantity": {
+            "type": "integer",
+            "example": 2
+          },
+          "unitPrice": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Snapshot price preserved at order time",
+            "example": 185000
+          },
+          "subtotal": {
+            "type": "integer",
+            "format": "int64",
+            "example": 370000
+          },
+          "cookingNote": {
+            "type": "string",
+            "example": "Ít cay"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "QUEUED",
+              "COOKING",
+              "READY",
+              "SERVED",
+              "CANCELLED"
+            ],
+            "example": "COOKING"
+          },
+          "sentToKitchenAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrderDto": {
+        "type": "object",
+        "required": [
+          "id",
+          "orderCode",
+          "tableId",
+          "tableNumber",
+          "guestCount",
+          "status",
+          "items"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 8821
+          },
+          "orderCode": {
+            "type": "string",
+            "example": "#ORD-8821"
+          },
+          "tableId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 3
+          },
+          "tableNumber": {
+            "type": "string",
+            "example": "Bàn 03"
+          },
+          "serverName": {
+            "type": "string",
+            "example": "Trần Công Chiến"
+          },
+          "guestCount": {
+            "type": "integer",
+            "example": 4
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "COOKING",
+              "SERVED",
+              "COMPLETED"
+            ],
+            "example": "COOKING"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItemDto"
+            }
+          },
+          "rawSubtotal": {
+            "type": "integer",
+            "format": "int64",
+            "example": 650000
+          }
+        }
+      },
+      "KdsTicketDto": {
+        "type": "object",
+        "required": [
+          "orderId",
+          "orderCode",
+          "tableNumber",
+          "elapsedMinutes",
+          "items"
+        ],
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 8821
+          },
+          "orderCode": {
+            "type": "string",
+            "example": "#ORD-8821"
+          },
+          "tableNumber": {
+            "type": "string",
+            "example": "Bàn 03"
+          },
+          "elapsedMinutes": {
+            "type": "integer",
+            "description": "Elapsed time since dispatched to kitchen",
+            "example": 12
+          },
+          "isUrgent": {
+            "type": "boolean",
+            "description": "Marked true if waiting > 15 mins",
+            "example": false
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItemDto"
+            }
+          }
+        }
+      },
+      "PreBillResponse": {
+        "type": "object",
+        "required": [
+          "orderId",
+          "orderCode",
+          "tableNumber",
+          "rawSubtotal",
+          "serviceFeeAmount",
+          "vatAmount",
+          "finalEstimate"
+        ],
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 8821
+          },
+          "orderCode": {
+            "type": "string",
+            "example": "#ORD-8821"
+          },
+          "tableNumber": {
+            "type": "string",
+            "example": "Bàn 03"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItemDto"
+            }
+          },
+          "rawSubtotal": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1000000
+          },
+          "serviceFeePercent": {
+            "type": "integer",
+            "example": 5
+          },
+          "serviceFeeAmount": {
+            "type": "integer",
+            "format": "int64",
+            "example": 50000
+          },
+          "vatPercent": {
+            "type": "integer",
+            "example": 8
+          },
+          "vatAmount": {
+            "type": "integer",
+            "format": "int64",
+            "example": 84000
+          },
+          "finalEstimate": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1134000
+          }
+        }
+      },
+      "VoucherValidationResult": {
+        "type": "object",
+        "required": [
+          "voucherId",
+          "code",
+          "discountType",
+          "discountValue",
+          "appliedDiscountAmount"
+        ],
+        "properties": {
+          "voucherId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 5
+          },
+          "code": {
+            "type": "string",
+            "example": "VIPGOLD10"
+          },
+          "discountType": {
+            "type": "string",
+            "enum": [
+              "PERCENTAGE",
+              "FIXED_AMOUNT"
+            ],
+            "example": "PERCENTAGE"
+          },
+          "discountValue": {
+            "type": "integer",
+            "example": 10
+          },
+          "appliedDiscountAmount": {
+            "type": "integer",
+            "format": "int64",
+            "example": 100000
+          }
+        }
+      },
+      "CustomerDto": {
+        "type": "object",
+        "required": [
+          "id",
+          "phone",
+          "fullName",
+          "membershipTier",
+          "loyaltyPoints"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 501
+          },
+          "phone": {
+            "type": "string",
+            "example": "0901234567"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Nguyễn Văn An"
+          },
+          "membershipTier": {
+            "type": "string",
+            "enum": [
+              "STANDARD",
+              "SILVER",
+              "GOLD",
+              "PLATINUM"
+            ],
+            "example": "GOLD"
+          },
+          "loyaltyPoints": {
+            "type": "integer",
+            "example": 250
+          }
+        }
+      },
+      "CreateInvoiceRequest": {
+        "type": "object",
+        "required": [
+          "orderId"
+        ],
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 8821
+          },
+          "customerId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "example": 501
+          },
+          "voucherId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "example": 5
+          },
+          "redeemPoints": {
+            "type": "integer",
+            "default": 0,
+            "example": 50
+          }
+        }
+      },
+      "InvoiceDto": {
+        "type": "object",
+        "required": [
+          "id",
+          "invoiceCode",
+          "orderId",
+          "subtotal",
+          "finalTotal",
+          "status",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1042
+          },
+          "invoiceCode": {
+            "type": "string",
+            "example": "#HD-2026-0001"
+          },
+          "orderId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 8821
+          },
+          "subtotal": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1000000
+          },
+          "voucherDiscount": {
+            "type": "integer",
+            "format": "int64",
+            "example": 100000
+          },
+          "pointsDiscount": {
+            "type": "integer",
+            "format": "int64",
+            "example": 50000
+          },
+          "serviceFeeAmount": {
+            "type": "integer",
+            "format": "int64",
+            "example": 42500
+          },
+          "vatAmount": {
+            "type": "integer",
+            "format": "int64",
+            "example": 71400
+          },
+          "finalTotal": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Sealed immutable amount due",
+            "example": 963900
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_PAYMENT",
+              "PAID",
+              "VOIDED"
+            ],
+            "example": "PENDING_PAYMENT"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CashPaymentRequest": {
+        "type": "object",
+        "required": [
+          "invoiceId",
+          "amountTendered"
+        ],
+        "properties": {
+          "invoiceId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1042
+          },
+          "amountTendered": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Cash handed by guest (VNĐ)",
+            "example": 1000000
+          }
+        }
+      },
+      "PaymentReceiptDto": {
+        "type": "object",
+        "required": [
+          "invoiceId",
+          "totalDue",
+          "amountPaid",
+          "changeGiven",
+          "isFullyPaid"
+        ],
+        "properties": {
+          "invoiceId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1042
+          },
+          "totalDue": {
+            "type": "integer",
+            "format": "int64",
+            "example": 963900
+          },
+          "amountPaid": {
+            "type": "integer",
+            "format": "int64",
+            "example": 963900
+          },
+          "amountTendered": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1000000
+          },
+          "changeGiven": {
+            "type": "integer",
+            "format": "int64",
+            "example": 36100
+          },
+          "isFullyPaid": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "VietQrResponse": {
+        "type": "object",
+        "required": [
+          "invoiceId",
+          "qrDataUrl",
+          "transferRef",
+          "amount",
+          "bankName",
+          "accountNo"
+        ],
+        "properties": {
+          "invoiceId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1042
+          },
+          "qrDataUrl": {
+            "type": "string",
+            "description": "Base64 data URL or PNG image URL of dynamic QR",
+            "example": "https://api.vietqr.io/image/970436-1029384756-compact2.png"
+          },
+          "transferRef": {
+            "type": "string",
+            "example": "ROMS HD1042"
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int64",
+            "example": 963900
+          },
+          "bankName": {
+            "type": "string",
+            "example": "Vietcombank"
+          },
+          "accountNo": {
+            "type": "string",
+            "example": "1029384756"
+          }
+        }
+      },
+      "BankWebhookPayload": {
+        "type": "object",
+        "required": [
+          "transactionId",
+          "transferRef",
+          "amount",
+          "transactionTime"
+        ],
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "example": "TXN-99881122"
+          },
+          "transferRef": {
+            "type": "string",
+            "example": "ROMS HD1042"
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int64",
+            "example": 963900
+          },
+          "transactionTime": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-14T14:35:10Z"
+          }
+        }
+      },
+      "ShiftSummaryDto": {
+        "type": "object",
+        "required": [
+          "shiftDate",
+          "totalRevenue",
+          "totalOrders",
+          "averageGrossMarginPercent",
+          "paymentsByMethod"
+        ],
+        "properties": {
+          "shiftDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-09-14"
+          },
+          "totalRevenue": {
+            "type": "integer",
+            "format": "int64",
+            "example": 48500000
+          },
+          "totalOrders": {
+            "type": "integer",
+            "example": 76
+          },
+          "averageGrossMarginPercent": {
+            "type": "number",
+            "format": "float",
+            "example": 62.8
+          },
+          "paymentsByMethod": {
+            "type": "object",
+            "properties": {
+              "cash": {
+                "type": "integer",
+                "format": "int64",
+                "example": 18200000
+              },
+              "vietQr": {
+                "type": "integer",
+                "format": "int64",
+                "example": 22400000
+              },
+              "card": {
+                "type": "integer",
+                "format": "int64",
+                "example": 7900000
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}</script>
+
+  <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.onload = function() {
+      const specData = JSON.parse(document.getElementById('api-spec').textContent);
+      window.ui = SwaggerUIBundle({
+        spec: specData,
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        layout: "BaseLayout",
+        defaultModelsExpandDepth: 1,
+        defaultModelExpandDepth: 1,
+        displayRequestDuration: true,
+        docExpansion: 'list',
+        filter: true
+      });
+    };
+  </script>
+</body>
+</html>

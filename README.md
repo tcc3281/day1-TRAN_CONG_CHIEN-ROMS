@@ -485,4 +485,21 @@ The system architecture is engineered using the **C4 Model (Simon Brown)**, brid
 > 📄 **Technical Architecture Documentation**:
 >
 > * 📐 **C4 Architecture Specification (Levels 1, 2, 3)**: [`docs/02-architecture/c4-architecture.md`](docs/02-architecture/c4-architecture.md)
+> * 🏛️ **arc42 System Architecture Document (Standard 12 Chapters)**: [`docs/02-architecture/arc42-system-architecture.md`](docs/02-architecture/arc42-system-architecture.md)
 > * 🔄 **Dynamic Behavior, State Machines & Sequence Flows**: [`docs/02-architecture/behavioral-architecture.md`](docs/02-architecture/behavioral-architecture.md)
+
+---
+
+## 9. API Specification & Realtime Communication Contract
+
+To eliminate integration ambiguity and enforce a strict boundary between Frontend clients and Backend services, the system features a complete, enterprise-grade technical specification:
+
+* **RESTful OpenAPI 3.0 Contract**: Covers all operational endpoints across Authentication, Dining Tables, Menu & Dishes (Core 1), POS Ordering (Core 2), Kitchen KDS, Cashier & Invoicing (Core 3), and Payments.
+* **SignalR Realtime WebSocket Hub**: Specifies bi-directional event broadcasts for instant KDS ticket delivery, live cooking stage updates, dynamic VietQR bank confirmations, and instant 86 out-of-stock locks (`< 200ms` latency).
+* **Zero-Setup Interactive Swagger UI**: Pre-rendered standalone interface with built-in schema exploration, request/response models, and status code references.
+
+> 📄 **API Specifications & Interactive Explorer**:
+>
+> * 📑 **OpenAPI 3.0 YAML Contract**: [`docs/05-api/openapi.yaml`](docs/05-api/openapi.yaml) (or [`docs/05-api/openapi.json`](docs/05-api/openapi.json))
+> * ⚡ **SignalR Realtime Event Protocol**: [`docs/05-api/realtime-signalr.md`](docs/05-api/realtime-signalr.md)
+> * 🌐 **Interactive Swagger UI Viewer**: Open [`docs/05-api/api-swagger-viewer.html`](docs/05-api/api-swagger-viewer.html) directly in any browser.
